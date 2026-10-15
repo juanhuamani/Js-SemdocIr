@@ -7,6 +7,14 @@ representation. This repository contains **Phase 1** of JS-SemDocIR:
 JavaScript source → parser → admission filter → extractor → assembler → JS-SemDocIR
 ```
 
+## Pipeline
+
+![JS-SemDocIR pipeline](images/pipeline.png)
+
+Phase 1 covers the deterministic parser, admission filter, extractor and
+assembler. Prompting, LLM generation and functional documentation belong to
+Phase 2.
+
 ## Requirements
 
 - Node.js 24 or newer
