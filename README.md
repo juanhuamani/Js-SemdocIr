@@ -1,19 +1,11 @@
 # JS-SemDocIR
 
 Deterministic JavaScript AST extraction for a compact semantic intermediate
-representation. This repository contains **Phase 1** of JS-SemDocIR:
+representation.
 
-```text
-JavaScript source → parser → admission filter → extractor → assembler → JS-SemDocIR
-```
-
-## Pipeline
 
 ![JS-SemDocIR pipeline](images/pipeline.png)
 
-Phase 1 covers the deterministic parser, admission filter, extractor and
-assembler. Prompting, LLM generation and functional documentation belong to
-Phase 2.
 
 ## Requirements
 
