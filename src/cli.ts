@@ -1,10 +1,13 @@
 import { createInterface } from 'node:readline';
 import { stdin, stdout } from 'node:process';
 
-import { GenerationService } from './client/generation-service.ts';
-import { MockGenerationClient } from './client/mock.ts';
-import { createRepresentationJobs, runRepresentationJob } from './orchestrator.ts';
-import { buildRepresentationBundle } from './representations.ts';
+import {
+  createRepresentationJobs,
+  GenerationService,
+  MockGenerationClient,
+  runRepresentationJob,
+} from './evaluation/generation/index.ts';
+import { buildRepresentationBundle } from './evaluation/representations/index.ts';
 
 const terminal = createInterface({ input: stdin, output: stdout });
 

@@ -5,7 +5,7 @@ functional documentation. The repository includes the Phase 1 extractor and a
 local Phase 2 implementation scaffold:
 
 ```text
-JavaScript source → one parsed AST → admission filter → B0/B1/B2/P → one-representation job → mock client
+JavaScript source → parsed AST → admission filter → extractor → JS-SemDocIR (P)
 ```
 
 ## Pipeline
@@ -13,9 +13,11 @@ JavaScript source → one parsed AST → admission filter → B0/B1/B2/P → one
 ![JS-SemDocIR pipeline](images/pipeline.png)
 
 Phase 1 provides the deterministic parser, admission filter, extractor and
-assembler. The Phase 2 local implementation builds B0 (original source), B1 (SBT),
-B2 (NIT), and P (JS-SemDocIR), then exercises one representation per job. Its
-default client is a deterministic mock; no real model provider is configured.
+assembler. The local web app demonstrates that system path and displays only P.
+B0 (source), B1 (SBT), and B2 (NIT) are comparison inputs implemented for the
+future evaluation protocol; they are not sequential processing steps or outputs
+of the user-facing system. The separate Phase 2 orchestration scaffold remains
+mock-only; no real model provider is configured.
 
 ## Requirements
 
@@ -49,11 +51,12 @@ npm run app
 ```
 
 Abre [http://127.0.0.1:4173](http://127.0.0.1:4173), pega la función y pulsa
-**Procesar función**. Puedes cambiar entre las pestañas B0, B1, B2 y P, y copiar
-el resultado de la pestaña activa. El botón **Cargar ejemplo** inserta una
-función de demostración. El servidor solo escucha en el equipo local y utiliza
-el cliente mock; no hace llamadas de red ni genera documentación real. Para
-detenerlo, pulsa `Ctrl+C` en la terminal.
+**Procesar función**. La pantalla muestra el flujo implementado y la salida P;
+**Cargar ejemplo** inserta `parseList`. B0/B1/B2 no se muestran porque son
+controles de comparación del protocolo experimental. El servidor solo escucha
+en el equipo local. La generación de comentarios no está configurada; no hace
+llamadas externas ni produce documentación con un modelo. Para detenerlo,
+pulsa `Ctrl+C` en la terminal.
 
 También está disponible el modo terminal con `npm run demo`.
 
@@ -125,17 +128,23 @@ cache records are local, ignored by Git, and are not thesis evidence.
 ## Project structure
 
 ```text
-src/parse.ts           Frozen Babel parser wrapper
-src/filter.ts          Admission filter
-src/extractor.ts       Semantic record extraction
-src/assembler.ts       Canonical JS-SemDocIR assembly
-src/serializers/       SBT and NIT serializers
-src/representations.ts B0/B1/B2/P contract and stable IDs
-src/client/            Mock client, cache, retries, and recovery
-src/orchestrator.ts    One function × one representation per job
-protocol.json          Non-secret, mock-only draft protocol
-test/                  Unit and mock integration tests
+src/core/ast/                    Parser, AST walk, admission, shared analysis
+src/core/semdocir/               P extraction and canonical assembly
+src/evaluation/representations/  B0/B1/B2/P comparison artifacts
+  serializers/                   SBT and NIT encoders
+src/evaluation/generation/       Experimental jobs, protocol, mock, cache
+src/web/routes/                  Product analysis and comparison HTTP routes
+src/client/                      Compatibility entry points for generation APIs
+src/server.ts                    Local web server and route dispatch
+src/{parse,filter,extractor,assembler,request,protocol}.ts  Compatibility entry points
+src/{serializers,representations,orchestrator}.ts  Compatibility entry points
+protocol.json                    Non-secret, mock-only draft protocol
+test/                            Unit and mock integration tests
 ```
+
+The core analysis parses once and is the only path that builds P. The
+experimental comparator reuses that exact P and AST for B1/B2 serialization;
+the user-facing `/api/analyze` route remains separate from `/api/compare`.
 
 ## License
 
