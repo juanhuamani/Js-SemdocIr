@@ -1,0 +1,62 @@
+[
+  {
+    "name": "nested function and identifiers",
+    "source": "function identity(value) { return value; }",
+    "sbt": "<FunctionDeclaration {\"source\":null,\"fields\":{\"async\":false,\"generator\":false}} <Identifier {\"source\":\"identity\",\"fields\":{}} Identifier> <Identifier {\"source\":\"value\",\"fields\":{}} Identifier> <BlockStatement <ReturnStatement <Identifier {\"source\":\"value\",\"fields\":{}} Identifier> ReturnStatement> BlockStatement> FunctionDeclaration>",
+    "nit": [
+      "[0,\"FunctionDeclaration\",{\"source\":null,\"fields\":{\"async\":false,\"generator\":false}},[1,2,3]]",
+      "[1,\"Identifier\",{\"source\":\"identity\",\"fields\":{}},[]]",
+      "[2,\"Identifier\",{\"source\":\"value\",\"fields\":{}},[]]",
+      "[3,\"BlockStatement\",null,[4]]",
+      "[4,\"ReturnStatement\",null,[5]]",
+      "[5,\"Identifier\",{\"source\":\"value\",\"fields\":{}},[]]"
+    ]
+  },
+  {
+    "name": "string literal retains its source spelling",
+    "source": "function greet() { return \"Hi\"; }",
+    "sbt": "<FunctionDeclaration {\"source\":null,\"fields\":{\"async\":false,\"generator\":false}} <Identifier {\"source\":\"greet\",\"fields\":{}} Identifier> <BlockStatement <ReturnStatement <StringLiteral {\"source\":\"\\\"Hi\\\"\",\"fields\":{}} StringLiteral> ReturnStatement> BlockStatement> FunctionDeclaration>",
+    "nit": [
+      "[0,\"FunctionDeclaration\",{\"source\":null,\"fields\":{\"async\":false,\"generator\":false}},[1,2]]",
+      "[1,\"Identifier\",{\"source\":\"greet\",\"fields\":{}},[]]",
+      "[2,\"BlockStatement\",null,[3]]",
+      "[3,\"ReturnStatement\",null,[4]]",
+      "[4,\"StringLiteral\",{\"source\":\"\\\"Hi\\\"\",\"fields\":{}},[]]"
+    ]
+  },
+  {
+    "name": "template literal retains source spelling and AST children",
+    "source": "function welcome(name) { return `Hi ${name}`; }",
+    "sbt": "<FunctionDeclaration {\"source\":null,\"fields\":{\"async\":false,\"generator\":false}} <Identifier {\"source\":\"welcome\",\"fields\":{}} Identifier> <Identifier {\"source\":\"name\",\"fields\":{}} Identifier> <BlockStatement <ReturnStatement <TemplateLiteral {\"source\":\"`Hi ${name}`\",\"fields\":{}} <TemplateElement {\"source\":null,\"fields\":{\"tail\":false}} TemplateElement> <TemplateElement {\"source\":null,\"fields\":{\"tail\":true}} TemplateElement> <Identifier {\"source\":\"name\",\"fields\":{}} Identifier> TemplateLiteral> ReturnStatement> BlockStatement> FunctionDeclaration>",
+    "nit": [
+      "[0,\"FunctionDeclaration\",{\"source\":null,\"fields\":{\"async\":false,\"generator\":false}},[1,2,3]]",
+      "[1,\"Identifier\",{\"source\":\"welcome\",\"fields\":{}},[]]",
+      "[2,\"Identifier\",{\"source\":\"name\",\"fields\":{}},[]]",
+      "[3,\"BlockStatement\",null,[4]]",
+      "[4,\"ReturnStatement\",null,[5]]",
+      "[5,\"TemplateLiteral\",{\"source\":\"`Hi ${name}`\",\"fields\":{}},[6,7,8]]",
+      "[6,\"TemplateElement\",{\"source\":null,\"fields\":{\"tail\":false}},[]]",
+      "[7,\"TemplateElement\",{\"source\":null,\"fields\":{\"tail\":true}},[]]",
+      "[8,\"Identifier\",{\"source\":\"name\",\"fields\":{}},[]]"
+    ]
+  },
+  {
+    "name": "semantic scalar fields are retained",
+    "source": "async function greater(a) { const result = a > 0; return result; }",
+    "sbt": "<FunctionDeclaration {\"source\":null,\"fields\":{\"async\":true,\"generator\":false}} <Identifier {\"source\":\"greater\",\"fields\":{}} Identifier> <Identifier {\"source\":\"a\",\"fields\":{}} Identifier> <BlockStatement <VariableDeclaration {\"source\":null,\"fields\":{\"kind\":\"const\"}} <VariableDeclarator <Identifier {\"source\":\"result\",\"fields\":{}} Identifier> <BinaryExpression {\"source\":null,\"fields\":{\"operator\":\">\"}} <Identifier {\"source\":\"a\",\"fields\":{}} Identifier> <NumericLiteral {\"source\":\"0\",\"fields\":{}} NumericLiteral> BinaryExpression> VariableDeclarator> VariableDeclaration> <ReturnStatement <Identifier {\"source\":\"result\",\"fields\":{}} Identifier> ReturnStatement> BlockStatement> FunctionDeclaration>",
+    "nit": [
+      "[0,\"FunctionDeclaration\",{\"source\":null,\"fields\":{\"async\":true,\"generator\":false}},[1,2,3]]",
+      "[1,\"Identifier\",{\"source\":\"greater\",\"fields\":{}},[]]",
+      "[2,\"Identifier\",{\"source\":\"a\",\"fields\":{}},[]]",
+      "[3,\"BlockStatement\",null,[4,10]]",
+      "[4,\"VariableDeclaration\",{\"source\":null,\"fields\":{\"kind\":\"const\"}},[5]]",
+      "[5,\"VariableDeclarator\",null,[6,7]]",
+      "[6,\"Identifier\",{\"source\":\"result\",\"fields\":{}},[]]",
+      "[7,\"BinaryExpression\",{\"source\":null,\"fields\":{\"operator\":\">\"}},[8,9]]",
+      "[8,\"Identifier\",{\"source\":\"a\",\"fields\":{}},[]]",
+      "[9,\"NumericLiteral\",{\"source\":\"0\",\"fields\":{}},[]]",
+      "[10,\"ReturnStatement\",null,[11]]",
+      "[11,\"Identifier\",{\"source\":\"result\",\"fields\":{}},[]]"
+    ]
+  }
+]

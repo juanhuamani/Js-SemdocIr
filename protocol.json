@@ -1,0 +1,21 @@
+{
+  "protocolVersion": "1.0-draft",
+  "status": "pending-advisor-and-model-approval",
+  "prompt": "You are given a JavaScript function represented in a structured textual format. Write a concise documentation comment (2 to 4 sentences) for the function: state what it does with its inputs, the main conditions it checks, the operations it performs, how it handles errors, and what it returns. Do not speculate about behavior that is not represented in the input. Output only the comment text.",
+  "generation": {
+    "clientMode": "mock",
+    "allowRealApi": false,
+    "provider": null,
+    "model": null,
+    "modelVersion": null,
+    "temperature": 0,
+    "topP": "provider-default",
+    "maxTokens": 128,
+    "seed": null
+  },
+  "retry": {
+    "maxAttempts": 3,
+    "initialDelayMs": 1000,
+    "backoffMultiplier": 2
+  }
+}

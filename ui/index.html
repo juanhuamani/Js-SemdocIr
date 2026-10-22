@@ -1,0 +1,975 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f2f3ef" />
+    <title>JS-SemDocIR · Analizador</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --canvas: #f2f3ef;
+        --surface: #ffffff;
+        --surface-soft: #f7f8f5;
+        --ink: #19241e;
+        --muted: #69766f;
+        --line: #dce1da;
+        --green: #176b4b;
+        --green-dark: #104a36;
+        --green-pale: #e5f1e9;
+        --amber: #8c5c0c;
+        --amber-pale: #f7efd9;
+        --red: #a34132;
+        --red-pale: #f8eae6;
+        --code: #17231e;
+        --code-ink: #edf4ee;
+        --sans: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+        --mono: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+        --radius: 9px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      html,
+      body {
+        min-width: 320px;
+        min-height: 100%;
+        margin: 0;
+      }
+      body {
+        background: var(--canvas);
+        color: var(--ink);
+        font-family: var(--sans);
+      }
+      button,
+      textarea {
+        font: inherit;
+      }
+      button {
+        color: inherit;
+      }
+      .app {
+        min-height: 100dvh;
+        display: grid;
+        grid-template-rows: 54px minmax(0, 1fr);
+      }
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 22px;
+        background: var(--surface);
+        border-bottom: 1px solid var(--line);
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 12px;
+        font-weight: 760;
+        letter-spacing: -0.025em;
+      }
+      .brand-mark {
+        width: 27px;
+        height: 27px;
+        display: grid;
+        place-items: center;
+        border-radius: 7px 7px 7px 2px;
+        background: var(--green);
+        color: #fff;
+        font: 700 10px var(--mono);
+      }
+      .brand-sub {
+        color: var(--muted);
+        font: 500 9px var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .top-status {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 6px 9px;
+        border: 1px solid #e7ddbf;
+        border-radius: 5px;
+        background: var(--amber-pale);
+        color: var(--amber);
+        font: 650 9px var(--mono);
+        letter-spacing: 0.035em;
+        text-transform: uppercase;
+      }
+      .top-status::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #c18b22;
+      }
+      main {
+        min-height: 0;
+        display: grid;
+        grid-template-rows: 58px minmax(0, 1fr);
+        gap: 10px;
+        padding: 12px 18px 16px;
+      }
+      .page-head {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 19px;
+        line-height: 1.2;
+        letter-spacing: -0.04em;
+        font-weight: 740;
+      }
+      .subtitle {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 10px;
+        line-height: 1.4;
+      }
+      .flow {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        color: var(--muted);
+        font: 600 8px var(--mono);
+        white-space: nowrap;
+      }
+      .flow-step {
+        padding: 5px 7px;
+        border-radius: 4px;
+        background: #e8ece6;
+      }
+      .flow-arrow {
+        color: #99a49c;
+      }
+      .workspace {
+        min-height: 0;
+        display: grid;
+        grid-template-columns: minmax(290px, 34%) minmax(0, 1fr);
+        gap: 12px;
+      }
+      .panel {
+        min-width: 0;
+        min-height: 0;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+      }
+      .editor {
+        display: grid;
+        grid-template-rows: 44px minmax(0, 1fr) auto;
+      }
+      .panel-head {
+        min-width: 0;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 0 12px;
+        border-bottom: 1px solid var(--line);
+      }
+      .panel-heading {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 10px;
+        font-weight: 740;
+      }
+      .step {
+        color: var(--green);
+        font: 700 9px var(--mono);
+      }
+      .editor-actions {
+        display: flex;
+        gap: 2px;
+      }
+      .quiet {
+        min-height: 28px;
+        border: 0;
+        border-radius: 5px;
+        padding: 0 7px;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 9px;
+        font-weight: 650;
+      }
+      .quiet:hover {
+        background: var(--surface-soft);
+        color: var(--ink);
+      }
+      .editor-content {
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+      }
+      .editor-label {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 7px;
+        color: var(--muted);
+        font: 600 8px var(--mono);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      textarea {
+        min-height: 0;
+        flex: 1;
+        width: 100%;
+        resize: none;
+        border: 1px solid #39483f;
+        border-radius: 6px;
+        padding: 12px;
+        outline: none;
+        background: var(--code);
+        color: var(--code-ink);
+        font: 10px/1.65 var(--mono);
+        tab-size: 2;
+      }
+      textarea::placeholder {
+        color: #99a69d;
+      }
+      textarea:focus {
+        border-color: #6aa786;
+        box-shadow: 0 0 0 3px #176b4b18;
+      }
+      .editor-bottom {
+        padding: 9px 10px 10px;
+        border-top: 1px solid var(--line);
+        background: var(--surface-soft);
+      }
+      .editor-hint {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 9px;
+        color: var(--muted);
+        font-size: 8px;
+      }
+      kbd {
+        padding: 2px 4px;
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        background: #fff;
+        font: 8px var(--mono);
+      }
+      .editor-controls {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .privacy {
+        color: var(--muted);
+        font-size: 8px;
+      }
+      .primary {
+        min-height: 33px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        border: 0;
+        border-radius: 5px;
+        padding: 0 11px;
+        background: var(--green);
+        color: #fff;
+        cursor: pointer;
+        font-size: 10px;
+        font-weight: 730;
+        transition: background 0.15s;
+      }
+      .primary:hover {
+        background: var(--green-dark);
+      }
+      .primary:disabled {
+        opacity: 0.55;
+        cursor: wait;
+      }
+      .analysis {
+        min-height: 0;
+        display: grid;
+        grid-template-rows: 50px minmax(0, 1fr);
+        gap: 9px;
+      }
+      .summary {
+        min-width: 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(180px, 34%);
+        align-items: center;
+        gap: 14px;
+        padding: 0 12px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+      }
+      .summary-state {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 10px;
+        font-weight: 690;
+      }
+      .state-dot {
+        width: 7px;
+        height: 7px;
+        flex: 0 0 7px;
+        border-radius: 50%;
+        background: #a0aaa2;
+      }
+      .summary-state.ready .state-dot {
+        background: #2b9963;
+        box-shadow: 0 0 0 3px #2b99631c;
+      }
+      .summary-state.error .state-dot {
+        background: var(--red);
+      }
+      .identity {
+        min-width: 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        padding-left: 12px;
+        border-left: 1px solid var(--line);
+      }
+      .identity-item {
+        min-width: 0;
+      }
+      .identity-label {
+        display: block;
+        margin-bottom: 2px;
+        color: var(--muted);
+        font: 600 7px var(--mono);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      .identity-value {
+        display: block;
+        overflow: hidden;
+        color: var(--ink);
+        font: 8px var(--mono);
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      #error {
+        display: none;
+        margin-top: 6px;
+        color: var(--red);
+        font-size: 9px;
+        font-weight: 500;
+      }
+      .summary.has-error {
+        grid-template-rows: 1fr auto;
+      }
+      .summary.has-error #error {
+        display: block;
+        grid-column: 1 / -1;
+      }
+      .outputs {
+        min-width: 0;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+      }
+      .output-card {
+        min-width: 0;
+        min-height: 0;
+        display: grid;
+        grid-template-rows: 36px minmax(0, 1fr) 25px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+      }
+      .output-head {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 0 10px;
+        border-bottom: 1px solid var(--line);
+      }
+      .output-title {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 9px;
+        font-weight: 740;
+      }
+      .repr {
+        width: 24px;
+        height: 22px;
+        flex: 0 0 24px;
+        display: grid;
+        place-items: center;
+        border-radius: 4px;
+        background: var(--green-pale);
+        color: var(--green-dark);
+        font: 700 9px var(--mono);
+      }
+      .output-subtitle {
+        margin-left: 4px;
+        color: var(--muted);
+        font-size: 8px;
+        font-weight: 450;
+      }
+      .output-tools {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .kind {
+        color: var(--muted);
+        font: 600 7px var(--mono);
+        text-transform: uppercase;
+      }
+      .copy {
+        min-height: 24px;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 0 7px;
+        background: var(--surface);
+        color: var(--green-dark);
+        cursor: pointer;
+        font-size: 8px;
+        font-weight: 700;
+      }
+      .copy:hover:not(:disabled) {
+        border-color: #98b29f;
+        background: var(--green-pale);
+      }
+      .copy:disabled {
+        color: #a6afa8;
+        cursor: not-allowed;
+      }
+      .output-body {
+        min-height: 0;
+        position: relative;
+        padding: 7px;
+      }
+      .output-empty {
+        height: 100%;
+        display: grid;
+        place-items: center;
+        padding: 10px;
+        border-radius: 5px;
+        background: var(--surface-soft);
+        color: #8a958d;
+        text-align: center;
+        font-size: 9px;
+      }
+      pre {
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        margin: 0;
+        padding: 9px;
+        border-radius: 5px;
+        background: var(--code);
+        color: var(--code-ink);
+        font: 8px/1.55 var(--mono);
+        white-space: pre;
+        scrollbar-color: #63746a var(--code);
+        scrollbar-width: thin;
+      }
+      pre.wrap {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+      .output-foot {
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 0 9px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 7px;
+      }
+      .result-message {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .cache {
+        flex: 0 0 auto;
+        font: 600 7px var(--mono);
+      }
+      .cache.hit {
+        color: var(--green);
+      }
+      .cache.miss {
+        color: var(--muted);
+      }
+      :focus-visible {
+        outline: 2px solid #408761;
+        outline-offset: 2px;
+      }
+      .spinner {
+        width: 10px;
+        height: 10px;
+        border: 2px solid #ffffff55;
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @media (min-width: 760px) and (min-height: 620px) {
+        body {
+          height: 100dvh;
+          overflow: hidden;
+        }
+        .app {
+          height: 100dvh;
+        }
+      }
+      @media (max-width: 900px) {
+        .flow {
+          display: none;
+        }
+        .workspace {
+          grid-template-columns: minmax(245px, 32%) minmax(0, 1fr);
+        }
+        .summary {
+          grid-template-columns: 1fr;
+        }
+        .identity {
+          display: none;
+        }
+      }
+      @media (max-width: 759px), (max-height: 619px) {
+        .app {
+          display: block;
+        }
+        main {
+          display: block;
+          padding: 14px;
+        }
+        .page-head {
+          margin-bottom: 12px;
+        }
+        .workspace {
+          display: flex;
+          flex-direction: column;
+        }
+        .editor {
+          height: 400px;
+          flex: none;
+        }
+        .analysis {
+          display: block;
+          margin-top: 12px;
+        }
+        .summary {
+          min-height: 50px;
+          display: block;
+          padding: 13px;
+        }
+        .identity {
+          display: grid;
+          margin-top: 10px;
+          padding: 9px 0 0;
+          border-top: 1px solid var(--line);
+          border-left: 0;
+        }
+        .outputs {
+          grid-template-columns: minmax(0, 1fr);
+          grid-template-rows: none;
+          margin-top: 9px;
+        }
+        .output-card {
+          min-height: 300px;
+        }
+        .output-body {
+          height: 240px;
+        }
+        footer {
+          padding: 10px 14px 14px;
+          color: var(--muted);
+          font: 7px var(--mono);
+        }
+      }
+      @media (max-width: 440px) {
+        .topbar {
+          padding: 0 12px;
+        }
+        main {
+          padding: 12px 10px;
+        }
+        .brand-sub {
+          display: none;
+        }
+        .page-head {
+          align-items: start;
+        }
+        h1 {
+          font-size: 17px;
+        }
+        .subtitle {
+          max-width: 260px;
+          font-size: 9px;
+        }
+        .top-status {
+          padding: 5px 7px;
+          font-size: 8px;
+        }
+        .panel-head {
+          padding: 0 9px;
+        }
+        .quiet {
+          padding: 0 5px;
+          font-size: 8px;
+        }
+        .editor-content {
+          padding: 8px;
+        }
+        .editor-bottom {
+          padding: 8px;
+        }
+        .editor-hint {
+          font-size: 7px;
+        }
+        .privacy {
+          max-width: 115px;
+          line-height: 1.35;
+        }
+        .output-subtitle,
+        .kind {
+          display: none;
+        }
+        .output-card {
+          min-height: 280px;
+        }
+        .output-body {
+          height: 220px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          transition-duration: 0.01ms !important;
+          animation-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">JS</span><span>JS-SemDocIR</span
+          ><span class="brand-sub">Analizador local</span>
+        </div>
+        <div class="top-status">Simulación mock · sin IA real</div>
+      </header>
+      <main>
+        <div class="page-head">
+          <div>
+            <h1>Analiza una función JavaScript</h1>
+            <p class="subtitle">Pega el código, procésalo y compara sus cuatro representaciones.</p>
+          </div>
+          <div class="flow" aria-label="Pasos">
+            <span class="flow-step">1 · Pegar código</span><span class="flow-arrow">→</span
+            ><span class="flow-step">2 · Procesar</span><span class="flow-arrow">→</span
+            ><span class="flow-step">3 · Comparar</span>
+          </div>
+        </div>
+        <section class="workspace" aria-label="Analizador JS-SemDocIR">
+          <article class="panel editor">
+            <div class="panel-head">
+              <div class="panel-heading">
+                <span class="step">01</span><span>Función de entrada</span>
+              </div>
+              <div class="editor-actions">
+                <button id="example" class="quiet" type="button">Cargar ejemplo</button
+                ><button id="clear" class="quiet" type="button">Limpiar</button>
+              </div>
+            </div>
+            <div class="editor-content">
+              <label class="editor-label" for="source"
+                ><span>JavaScript</span><span id="counts">0 líneas · 0 caracteres</span></label
+              >
+              <textarea
+                id="source"
+                aria-label="Código fuente JavaScript"
+                spellcheck="false"
+                autocapitalize="off"
+                autocomplete="off"
+                placeholder="function calcularTotal(items) {&#10;  return items.reduce((suma, item) => suma + item.precio, 0);&#10;}"
+              ></textarea>
+            </div>
+            <div class="editor-bottom">
+              <div class="editor-hint">
+                <span>Una función admitida · máximo 256 KB</span
+                ><span><kbd>Ctrl</kbd> + <kbd>Enter</kbd></span>
+              </div>
+              <div class="editor-controls">
+                <span class="privacy">Tu código no sale de este equipo.</span
+                ><button id="run" class="primary" type="button">
+                  <span id="run-icon" aria-hidden="true">▶</span
+                  ><span id="run-label">Procesar función</span>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <section class="analysis" aria-label="Resultados del análisis">
+            <div id="summary" class="summary">
+              <div class="summary-state" id="state">
+                <span class="state-dot" aria-hidden="true"></span
+                ><span id="state-label">Esperando una función</span>
+              </div>
+              <div class="identity">
+                <div class="identity-item">
+                  <span class="identity-label">Función</span
+                  ><code id="function-id" class="identity-value">—</code>
+                </div>
+                <div class="identity-item">
+                  <span class="identity-label">SHA-256</span
+                  ><code id="hash" class="identity-value">—</code>
+                </div>
+              </div>
+              <div id="error" role="alert"></div>
+            </div>
+
+            <div class="outputs" aria-label="Cuatro representaciones generadas desde el mismo AST">
+              <article class="output-card">
+                <div class="output-head">
+                  <div class="output-title">
+                    <span class="repr">B0</span
+                    ><span>Código original <span class="output-subtitle">· fuente base</span></span>
+                  </div>
+                  <div class="output-tools">
+                    <span class="kind">Base</span
+                    ><button class="copy" data-copy="b0" type="button" disabled>Copiar</button>
+                  </div>
+                </div>
+                <div class="output-body">
+                  <div class="output-empty" data-empty="b0">Aquí aparecerá el código original.</div>
+                  <pre id="output-b0" hidden></pre>
+                </div>
+                <div class="output-foot">
+                  <span class="result-message" data-message="b0">Aún no procesado</span
+                  ><span class="cache" data-cache="b0">—</span>
+                </div>
+              </article>
+              <article class="output-card">
+                <div class="output-head">
+                  <div class="output-title">
+                    <span class="repr">B1</span
+                    ><span>SBT <span class="output-subtitle">· árbol entre corchetes</span></span>
+                  </div>
+                  <div class="output-tools">
+                    <span class="kind">Compacto</span
+                    ><button class="copy" data-copy="b1" type="button" disabled>Copiar</button>
+                  </div>
+                </div>
+                <div class="output-body">
+                  <div class="output-empty" data-empty="b1">
+                    Aquí aparecerá la representación SBT.
+                  </div>
+                  <pre id="output-b1" class="wrap" hidden></pre>
+                </div>
+                <div class="output-foot">
+                  <span class="result-message" data-message="b1">Aún no procesado</span
+                  ><span class="cache" data-cache="b1">—</span>
+                </div>
+              </article>
+              <article class="output-card">
+                <div class="output-head">
+                  <div class="output-title">
+                    <span class="repr">B2</span
+                    ><span
+                      >NIT <span class="output-subtitle">· árbol indexado por nodos</span></span
+                    >
+                  </div>
+                  <div class="output-tools">
+                    <span class="kind">JSONL</span
+                    ><button class="copy" data-copy="b2" type="button" disabled>Copiar</button>
+                  </div>
+                </div>
+                <div class="output-body">
+                  <div class="output-empty" data-empty="b2">
+                    Aquí aparecerá la representación NIT.
+                  </div>
+                  <pre id="output-b2" hidden></pre>
+                </div>
+                <div class="output-foot">
+                  <span class="result-message" data-message="b2">Aún no procesado</span
+                  ><span class="cache" data-cache="b2">—</span>
+                </div>
+              </article>
+              <article class="output-card">
+                <div class="output-head">
+                  <div class="output-title">
+                    <span class="repr">P</span
+                    ><span
+                      >JS-SemDocIR <span class="output-subtitle">· registros semánticos</span></span
+                    >
+                  </div>
+                  <div class="output-tools">
+                    <span class="kind">IR canónica</span
+                    ><button class="copy" data-copy="p" type="button" disabled>Copiar</button>
+                  </div>
+                </div>
+                <div class="output-body">
+                  <div class="output-empty" data-empty="p">
+                    Aquí aparecerá la representación semántica.
+                  </div>
+                  <pre id="output-p" hidden></pre>
+                </div>
+                <div class="output-foot">
+                  <span class="result-message" data-message="p">Aún no procesado</span
+                  ><span class="cache" data-cache="p">—</span>
+                </div>
+              </article>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+    <script>
+      const sample = `function calcularPrecioFinal(precioBase, impuesto, descuento) {\n  const precioConImpuesto = precioBase * (1 + impuesto / 100);\n  const montoDescuento = precioConImpuesto * (descuento / 100);\n  const precioFinal = precioConImpuesto - montoDescuento;\n  return precioFinal.toFixed(2);\n}`;
+      const source = document.querySelector('#source');
+      const run = document.querySelector('#run');
+      const summary = document.querySelector('#summary');
+      const state = document.querySelector('#state');
+      const stateLabel = document.querySelector('#state-label');
+      const error = document.querySelector('#error');
+      let resultData = null;
+
+      source.addEventListener('input', () => {
+        const lines = source.value ? source.value.split('\n').length : 0;
+        document.querySelector('#counts').textContent =
+          `${lines} ${lines === 1 ? 'línea' : 'líneas'} · ${source.value.length} caracteres`;
+        if (resultData) setStatus('El código cambió; procesa para actualizar las salidas', '');
+      });
+      document.querySelector('#example').addEventListener('click', () => {
+        source.value = sample;
+        source.dispatchEvent(new Event('input'));
+        source.focus();
+      });
+      document.querySelector('#clear').addEventListener('click', () => {
+        source.value = '';
+        source.dispatchEvent(new Event('input'));
+        source.focus();
+      });
+      source.addEventListener('keydown', (event) => {
+        if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+          event.preventDefault();
+          run.click();
+        }
+      });
+      run.addEventListener('click', analyze);
+
+      async function analyze() {
+        summary.classList.remove('has-error');
+        error.textContent = '';
+        if (!source.value.trim()) {
+          showError('Pega una función JavaScript para empezar.');
+          source.focus();
+          return;
+        }
+        run.disabled = true;
+        document.querySelector('#run-icon').innerHTML =
+          '<span class="spinner" aria-hidden="true"></span>';
+        document.querySelector('#run-label').textContent = 'Procesando…';
+        setStatus('Analizando función', '');
+        try {
+          const response = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ source: source.value }),
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || 'No se pudo procesar la función.');
+          resultData = data;
+          renderResults(data);
+          setStatus('Análisis completado · 4 representaciones listas', 'ready');
+        } catch (cause) {
+          showError(cause instanceof Error ? cause.message : String(cause));
+          setStatus('No se pudo analizar', 'error');
+        } finally {
+          run.disabled = false;
+          document.querySelector('#run-icon').textContent = '▶';
+          document.querySelector('#run-label').textContent = 'Procesar función';
+        }
+      }
+
+      function renderResults(data) {
+        document.querySelector('#function-id').textContent = data.functionId;
+        document.querySelector('#hash').textContent = data.sourceHash;
+        for (const id of ['b0', 'b1', 'b2', 'p']) {
+          const artifact = data.representations[id];
+          const generation = data.generations.find((job) => job.representation === id);
+          const output = document.querySelector(`#output-${id}`);
+          output.textContent = artifact.content;
+          output.hidden = false;
+          document.querySelector(`[data-empty="${id}"]`).hidden = true;
+          const message =
+            generation.status === 'succeeded'
+              ? 'Mock: sin generación real de documentación'
+              : `Error mock: ${generation.error}`;
+          document.querySelector(`[data-message="${id}"]`).textContent = message;
+          const cache = document.querySelector(`[data-cache="${id}"]`);
+          cache.textContent = `${generation.cacheHit ? 'CACHÉ' : 'NUEVO'} · ${generation.attempts} INT.`;
+          cache.className = `cache ${generation.cacheHit ? 'hit' : 'miss'}`;
+          document.querySelector(`[data-copy="${id}"]`).disabled = false;
+        }
+      }
+
+      function setStatus(message, modifier) {
+        state.className = `summary-state ${modifier}`;
+        stateLabel.textContent = message;
+      }
+
+      function showError(message) {
+        error.textContent = message;
+        summary.classList.add('has-error');
+      }
+
+      document.querySelectorAll('[data-copy]').forEach((button) => {
+        button.addEventListener('click', async () => {
+          const id = button.dataset.copy;
+          if (!resultData || !id) return;
+          try {
+            await navigator.clipboard.writeText(resultData.representations[id].content);
+            button.textContent = 'Copiado';
+          } catch {
+            button.textContent = 'Error';
+          }
+          window.setTimeout(() => {
+            button.textContent = 'Copiar';
+          }, 1200);
+        });
+      });
+    </script>
+  </body>
+</html>

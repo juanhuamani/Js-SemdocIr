@@ -1,7 +1,7 @@
 {
   "name": "jssemdocir",
   "version": "0.1.0",
-  "description": "JS-SemDocIR — deterministic compact semantic representation extractor (Phase 1)",
+  "description": "JS-SemDocIR — AST representations and mock documentation pipeline",
   "type": "module",
   "private": true,
   "license": "UNLICENSED",
@@ -10,6 +10,9 @@
   },
   "scripts": {
     "test": "node --test",
+    "test:integration": "node --test test/integration/phase2.test.ts",
+    "demo": "node src/cli.ts",
+    "app": "node src/server.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
