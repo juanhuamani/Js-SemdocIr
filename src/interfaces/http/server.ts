@@ -2,10 +2,10 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'node:ht
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
-import { handleAnalyzeRoute, handleCompareRoute } from './web/routes/index.ts';
-import { sendJson } from './web/http.ts';
+import { handleAnalyzeRoute, handleCompareRoute } from './routes/index.ts';
+import { sendJson } from './http.ts';
 
-const pagePath = fileURLToPath(new URL('../ui/index.html', import.meta.url));
+const pagePath = fileURLToPath(new URL('../../../ui/index.html', import.meta.url));
 
 /** Creates the local UI server; exported to support HTTP integration tests. */
 export function createAppServer() {

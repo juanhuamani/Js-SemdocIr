@@ -7,12 +7,12 @@ import {
   runRepresentationJob,
   type GenerationCache,
   type GenerationCacheRecord,
-} from '../../evaluation/generation/index.ts';
+} from '../../../generation/index.ts';
 import {
   buildRepresentationBundle,
   FunctionNotAdmittedError,
   type RepresentationId,
-} from '../../evaluation/representations/index.ts';
+} from '../../../representations/index.ts';
 import { readJson, sendJson } from '../http.ts';
 
 class InMemoryGenerationCache implements GenerationCache {

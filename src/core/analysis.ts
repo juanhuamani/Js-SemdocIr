@@ -1,10 +1,10 @@
 import { createHash } from 'node:crypto';
 import type { Node } from '@babel/types';
 
-import { assemble } from '../semdocir/assembler.ts';
-import { extractFunction, type ExtractorResult } from '../semdocir/extractor.ts';
-import { detectUnit, filter, type FilterResult, type Unit } from './filter.ts';
-import { parseFunction } from './parse.ts';
+import { assemble } from './semdocir/assembler.ts';
+import { extractFunction, type ExtractorResult } from './semdocir/extractor.ts';
+import { detectUnit, filter, type FilterResult, type Unit } from './ast/filter.ts';
+import { parseFunction } from './ast/parse.ts';
 
 /** One parse/filter/extract/assemble pass over a JavaScript function source. */
 export interface FunctionAnalysis {

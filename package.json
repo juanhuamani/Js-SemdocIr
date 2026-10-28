@@ -11,8 +11,8 @@
   "scripts": {
     "test": "node --test",
     "test:integration": "node --test test/integration/phase2.test.ts",
-    "demo": "node src/cli.ts",
-    "app": "node src/server.ts",
+    "demo": "node src/interfaces/cli.ts",
+    "app": "node src/interfaces/http/server.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",

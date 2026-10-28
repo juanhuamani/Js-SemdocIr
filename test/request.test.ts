@@ -11,8 +11,8 @@ import {
   MockGenerationClient,
   MOCK_OUTPUT,
   validateProtocolConfig,
-} from '../src/evaluation/generation/index.ts';
-import { buildRepresentationBundle } from '../src/evaluation/representations/index.ts';
+} from '../src/generation/index.ts';
+import { buildRepresentationBundle } from '../src/representations/index.ts';
 
 describe('F2.5 generation request and mock client', () => {
   it('loads the versioned protocol with real API disabled and no model selected', () => {

@@ -1,4 +1,4 @@
-// src/protocol.ts — non-secret, validated generation protocol (F2.5).
+﻿// src/protocol.ts — non-secret, validated generation protocol (F2.5).
 
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -111,7 +111,7 @@ export function validateProtocolConfig(value: unknown): ProtocolConfig {
  * @returns Validated, mock-only protocol configuration.
  */
 export function loadProtocolConfig(
-  path = fileURLToPath(new URL('../../../protocol.json', import.meta.url)),
+  path = fileURLToPath(new URL('../../protocol.json', import.meta.url)),
 ): ProtocolConfig {
   const parsed: unknown = JSON.parse(readFileSync(path, 'utf8'));
   return validateProtocolConfig(parsed);

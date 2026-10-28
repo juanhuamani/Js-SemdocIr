@@ -2,7 +2,7 @@
 
 import { VISITOR_KEYS, type Node } from '@babel/types';
 
-import { isNode } from '../../../core/ast/walk.ts';
+import { isNode } from '../../core/ast/walk.ts';
 
 /** Node payload shared by SBT and NIT. */
 export interface SerializedNodePayload {

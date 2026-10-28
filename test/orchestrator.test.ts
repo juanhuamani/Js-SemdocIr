@@ -16,11 +16,8 @@ import {
   runRepresentationJob,
   type GenerationClient,
   type GenerationResponse,
-} from '../src/evaluation/generation/index.ts';
-import {
-  buildRepresentationBundle,
-  REPRESENTATION_IDS,
-} from '../src/evaluation/representations/index.ts';
+} from '../src/generation/index.ts';
+import { buildRepresentationBundle, REPRESENTATION_IDS } from '../src/representations/index.ts';
 
 function response(output: string): GenerationResponse {
   return {

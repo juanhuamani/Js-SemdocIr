@@ -87,8 +87,8 @@ import {
   MockGenerationClient,
   createRepresentationJobs,
   runRepresentationJob,
-} from './src/evaluation/generation/index.ts';
-import { buildRepresentationBundle } from './src/evaluation/representations/index.ts';
+} from './src/generation/index.ts';
+import { buildRepresentationBundle } from './src/representations/index.ts';
 
 const bundle = buildRepresentationBundle('function identity(value) { return value; }', {
   sourceId: 'example:identity',
@@ -136,12 +136,12 @@ cache records are local, ignored by Git, and are not thesis evidence.
 ```text
 src/core/ast/                    Parser, AST walk, admission, shared analysis
 src/core/semdocir/               P extraction and canonical assembly
-src/evaluation/representations/  B0/B1/B2/P comparison artifacts
+src/representations/             B0/B1/B2/P comparison artifacts
   serializers/                   SBT and NIT encoders
-src/evaluation/generation/       Jobs, protocol, mock client, cache
-src/web/routes/                  Analysis and comparison HTTP routes
-src/server.ts                    Local web server and route dispatch
-src/cli.ts                       Terminal demo
+src/generation/                  Jobs, protocol, mock client, cache
+src/interfaces/http/routes/      Analysis and comparison HTTP routes
+src/interfaces/http/server.ts    Local web server and route dispatch
+src/interfaces/cli.ts            Terminal demo
 docs/design.md             Module map, contracts and design rules
 docs/status.md                   Implemented state and open gates
 protocol.json                    Non-secret, mock-only draft protocol

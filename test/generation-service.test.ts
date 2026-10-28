@@ -16,8 +16,8 @@ import {
   type GenerationClient,
   type GenerationRequest,
   type GenerationResponse,
-} from '../src/evaluation/generation/index.ts';
-import { buildRepresentationBundle } from '../src/evaluation/representations/index.ts';
+} from '../src/generation/index.ts';
+import { buildRepresentationBundle } from '../src/representations/index.ts';
 
 const fixedDate = new Date('2026-10-20T12:00:00.000Z');
 

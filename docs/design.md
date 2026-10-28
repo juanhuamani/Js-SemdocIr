@@ -1,4 +1,4 @@
-# Architecture
+﻿# Architecture
 
 JS-SemDocIR turns one JavaScript function into a deterministic textual
 representation (`P`) and, for the evaluation protocol, into three comparison
@@ -18,31 +18,32 @@ inputs for the protocol; they are not stages of the user-facing system.
 ## Layering
 
 ```text
-web / cli  →  evaluation  →  core
+interfaces  →  generation  →  representations  →  core
 ```
 
 - `core/` is pure: no I/O, no network, no process access. It depends only on
   `@babel/parser` and `@babel/types`.
-- `evaluation/` builds representations and prepares generation jobs. It may
-  read configuration and write cache files, but never calls a provider.
-- `web/` and `cli.ts` are delivery surfaces.
+- `representations/` builds the four artifacts; `generation/` prepares and runs
+  jobs. They may read configuration and write cache files, but never call a
+  provider.
+- `interfaces/` (HTTP server and CLI) are delivery surfaces.
 
 A module is consumed through its `index.ts`. There are no compatibility
 re-export layers and no deep imports across modules.
 
 ## Modules
 
-| Path | Responsibility | Public exports |
-|---|---|---|
-| `src/core/ast/parse.ts` | Frozen Babel wrapper. Produces an explicit `SyntaxError` on invalid input. | `parseFunction`, `PARSER_VERSION` |
-| `src/core/ast/walk.ts` | Generic depth-first traversal that can stop at a frontier. | `walk`, `isNode`, `ABORT` |
-| `src/core/ast/filter.ts` | Recognizes one named unit and rejects excluded syntax with a deterministic cause. | `filter`, `detectUnit`, `CAUSES` |
-| `src/core/ast/analysis.ts` | Single parse shared by every representation. | `analyzeFunction` |
-| `src/core/semdocir/extractor.ts` | Walks the admitted unit and emits records, respecting function frontiers. | `extractFunction`, `CATEGORIES` |
-| `src/core/semdocir/assembler.ts` | Canonical text: category grouping, order preservation, absence markers. | `assemble` |
-| `src/evaluation/representations/` | Builds the four artifacts from one analysis. | `buildRepresentationBundle`, `REPRESENTATION_IDS` |
-| `src/evaluation/representations/serializers/` | SBT and NIT encoders over the shared AST. | `serializeSbt`, `serializeNit` |
-| `src/evaluation/generation/` | Protocol, request, mock client, cache, retries, orchestration. | `GenerationService`, `createRepresentationJobs` |
+| Path                               | Responsibility                                                                    | Public exports                                    |
+| ---------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------- |
+| `src/core/ast/parse.ts`            | Frozen Babel wrapper. Produces an explicit `SyntaxError` on invalid input.        | `parseFunction`, `PARSER_VERSION`                 |
+| `src/core/ast/walk.ts`             | Generic depth-first traversal that can stop at a frontier.                        | `walk`, `isNode`, `ABORT`                         |
+| `src/core/ast/filter.ts`           | Recognizes one named unit and rejects excluded syntax with a deterministic cause. | `filter`, `detectUnit`, `CAUSES`                  |
+| `src/core/ast/analysis.ts`         | Single parse shared by every representation.                                      | `analyzeFunction`                                 |
+| `src/core/semdocir/extractor.ts`   | Walks the admitted unit and emits records, respecting function frontiers.         | `extractFunction`, `CATEGORIES`                   |
+| `src/core/semdocir/assembler.ts`   | Canonical text: category grouping, order preservation, absence markers.           | `assemble`                                        |
+| `src/representations/`             | Builds the four artifacts from one analysis.                                      | `buildRepresentationBundle`, `REPRESENTATION_IDS` |
+| `src/representations/serializers/` | SBT and NIT encoders over the shared AST.                                         | `serializeSbt`, `serializeNit`                    |
+| `src/generation/`                  | Protocol, request, mock client, cache, retries, orchestration.                    | `GenerationService`, `createRepresentationJobs`   |
 
 Parser version is frozen at `@babel/parser@8.0.7` with `sourceType:
 'unambiguous'`, `errorRecovery: false` and no JSX/TypeScript/decorator plugins.

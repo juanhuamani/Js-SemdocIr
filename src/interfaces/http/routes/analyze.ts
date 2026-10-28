@@ -1,8 +1,8 @@
 import { VISITOR_KEYS, type Node } from '@babel/types';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
-import { analyzeFunction } from '../../core/ast/analysis.ts';
-import { CAUSES } from '../../core/ast/filter.ts';
+import { analyzeFunction } from '../../../core/analysis.ts';
+import { CAUSES } from '../../../core/ast/filter.ts';
 import { readJson, sendJson } from '../http.ts';
 
 const maxAstInspectionNodes = 1800;

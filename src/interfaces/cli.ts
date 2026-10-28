@@ -6,8 +6,8 @@ import {
   GenerationService,
   MockGenerationClient,
   runRepresentationJob,
-} from './evaluation/generation/index.ts';
-import { buildRepresentationBundle } from './evaluation/representations/index.ts';
+} from '../generation/index.ts';
+import { buildRepresentationBundle } from '../representations/index.ts';
 
 const terminal = createInterface({ input: stdin, output: stdout });
 

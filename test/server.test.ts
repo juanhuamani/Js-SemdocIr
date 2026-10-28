@@ -3,7 +3,7 @@ import { once } from 'node:events';
 import { after, before, describe, it } from 'node:test';
 import type { AddressInfo } from 'node:net';
 
-import { createAppServer } from '../src/server.ts';
+import { createAppServer } from '../src/interfaces/http/server.ts';
 
 describe('local web app', () => {
   const server = createAppServer();

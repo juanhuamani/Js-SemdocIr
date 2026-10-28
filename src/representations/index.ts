@@ -2,8 +2,8 @@ import { createHash } from 'node:crypto';
 
 import type { Node } from '@babel/types';
 
-import { analyzeFunction } from '../../core/ast/analysis.ts';
-import type { FilterResult } from '../../core/ast/filter.ts';
+import { analyzeFunction } from '../core/analysis.ts';
+import type { FilterResult } from '../core/ast/filter.ts';
 import { serializeNit } from './serializers/nit.ts';
 import { serializeSbt } from './serializers/sbt.ts';
 

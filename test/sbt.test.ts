@@ -7,7 +7,7 @@ import { describe, it } from 'node:test';
 import type { Node } from '@babel/types';
 
 import { detectUnit, parseFunction } from '../src/core/ast/index.ts';
-import { serializeSbt } from '../src/evaluation/representations/index.ts';
+import { serializeSbt } from '../src/representations/index.ts';
 
 interface SerializerFixture {
   name: string;
