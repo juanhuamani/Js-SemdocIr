@@ -33,20 +33,32 @@ re-export layers and no deep imports across modules.
 
 ## Modules
 
-| Path                               | Responsibility                                                                    | Public exports                                    |
-| ---------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------- |
-| `src/core/ast/parse.ts`            | Frozen Babel wrapper. Produces an explicit `SyntaxError` on invalid input.        | `parseFunction`, `PARSER_VERSION`                 |
-| `src/core/ast/walk.ts`             | Generic depth-first traversal that can stop at a frontier.                        | `walk`, `isNode`, `ABORT`                         |
-| `src/core/ast/filter.ts`           | Recognizes one named unit and rejects excluded syntax with a deterministic cause. | `filter`, `detectUnit`, `CAUSES`                  |
-| `src/core/ast/analysis.ts`         | Single parse shared by every representation.                                      | `analyzeFunction`                                 |
-| `src/core/semdocir/extractor.ts`   | Walks the admitted unit and emits records, respecting function frontiers.         | `extractFunction`, `CATEGORIES`                   |
-| `src/core/semdocir/assembler.ts`   | Canonical text: category grouping, order preservation, absence markers.           | `assemble`                                        |
-| `src/representations/`             | Builds the four artifacts from one analysis.                                      | `buildRepresentationBundle`, `REPRESENTATION_IDS` |
-| `src/representations/serializers/` | SBT and NIT encoders over the shared AST.                                         | `serializeSbt`, `serializeNit`                    |
-| `src/generation/`                  | Protocol, request, mock client, cache, retries, orchestration.                    | `GenerationService`, `createRepresentationJobs`   |
+| Path                               | Responsibility                                                                     | Public exports                                    |
+| ---------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------- |
+| `src/core/ast/parse.ts`            | Frozen Babel wrapper. Produces an explicit `SyntaxError` on invalid input.         | `parseFunction`, `PARSER_VERSION`                 |
+| `src/core/ast/walk.ts`             | Generic depth-first traversal that can stop at a frontier.                         | `walk`, `isNode`, `ABORT`                         |
+| `src/core/ast/filter.ts`           | Recognizes one named unit and rejects excluded syntax with a deterministic cause.  | `filter`, `detectUnit`, `CAUSES`                  |
+| `src/core/analysis.ts`             | Single parse shared by every representation; composes the pipeline.                | `analyzeFunction`                                 |
+| `src/core/semdocir/model.ts`       | Vocabulary: categories, records, node type guards.                                 | `CATEGORIES`, `Record`, `ExtractorResult`         |
+| `src/core/semdocir/source.ts`      | Verbatim source view (comments blanked) and `verbatim` rendering.                  | `SourceView`, `verbatim`                          |
+| `src/core/semdocir/bindings.ts`    | Pure-binding detection: counts, cycle safety, reference positions.                 | `BindingTable`, `collectReferencePositions`       |
+| `src/core/semdocir/expansion.ts`   | Substitutes pure bindings into RET/CALL/COND text.                                 | `expanded`, `expandedReturnedValue`               |
+| `src/core/semdocir/rules/`         | One rule module per concern: statements, expressions, conditionals, loops, errors. | internal                                          |
+| `src/core/semdocir/extractor.ts`   | Facade: owns state, implements the rule context, returns records.                  | `extractFunction`, `CATEGORIES`                   |
+| `src/core/semdocir/assembler.ts`   | Canonical text: category grouping, order preservation, absence markers.            | `assemble`                                        |
+| `src/representations/`             | Builds the four artifacts from one analysis.                                       | `buildRepresentationBundle`, `REPRESENTATION_IDS` |
+| `src/representations/serializers/` | SBT and NIT encoders over the shared AST.                                          | `serializeSbt`, `serializeNit`                    |
+| `src/generation/`                  | Protocol, request, mock client, cache, retries, orchestration.                     | `GenerationService`, `createRepresentationJobs`   |
 
 Parser version is frozen at `@babel/parser@8.0.7` with `sourceType:
 'unambiguous'`, `errorRecovery: false` and no JSX/TypeScript/decorator plugins.
+
+## File size budget
+
+No file under `src/` should exceed **250 lines**. A file that grows past it is
+a sign it holds two responsibilities, not one. Current exception:
+`generation/generation-service.ts` (312 lines), to be split when the
+generation ports land (phase 4).
 
 ## Representation P
 

@@ -20,6 +20,14 @@ Verification: `npm test` → **128 tests, 23 suites**, all passing.
 `npm run test:integration`, `npm run typecheck`, `npm run lint` and
 `npm run format:check` also pass.
 
+## Structure
+
+`src/` is organised by domain: `core/` (pure), `representations/`,
+`generation/`, `interfaces/`. The extractor, once 876 lines in a single class,
+is now a 139-line facade over `core/semdocir/rules/`. The largest remaining
+file is `generation/generation-service.ts` (312 lines), the split target of
+the generation phase.
+
 ## Not implemented, by design
 
 - No real model provider. `protocol.json` keeps `allowRealApi: false` and no
