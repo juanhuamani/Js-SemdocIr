@@ -16,7 +16,11 @@ import {
   type GenerationClient,
   type GenerationResponse,
 } from '../../src/generation/index.ts';
-import { buildRepresentationBundle, REPRESENTATION_IDS } from '../../src/representations/index.ts';
+import {
+  buildRepresentationBundle,
+  FunctionNotAdmittedError,
+  REPRESENTATION_IDS,
+} from '../../src/representations/index.ts';
 
 class CountingMockClient implements GenerationClient {
   readonly requests: Parameters<GenerationClient['generate']>[0][] = [];
@@ -91,5 +95,23 @@ describe('Phase 2 local end-to-end integration', () => {
     } finally {
       await rm(directory, { recursive: true, force: true });
     }
+  });
+});
+
+describe('Phase 2 integration rejects input before any model call', () => {
+  it('surfaces the syntax error and produces no representation', () => {
+    assert.throws(() => buildRepresentationBundle('function {'), SyntaxError);
+  });
+
+  it('surfaces the admission cause for a construct outside the subset', () => {
+    assert.throws(
+      () => buildRepresentationBundle('function* unsupported() { yield 1; }'),
+      (error: unknown) => {
+        assert.ok(error instanceof FunctionNotAdmittedError);
+        assert.equal(error.admission.admitted, false);
+        assert.equal(error.admission.cause, 'generator');
+        return true;
+      },
+    );
   });
 });

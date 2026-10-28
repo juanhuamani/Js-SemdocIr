@@ -16,9 +16,9 @@ Last updated: 2026-10-28.
 | One-function × one-representation orchestration      | complete                  |
 | Local web app and terminal demo                      | complete                  |
 
-Verification: `npm test` → **128 tests, 23 suites**, all passing.
-`npm run test:integration`, `npm run typecheck`, `npm run lint` and
-`npm run format:check` also pass.
+Verification: `npm test` → **131 tests, 24 suites**, all passing.
+`npm run test:integration`, `npm run typecheck`, `npm run lint`,
+`npm run format:check` and `npm run check:size` also pass.
 
 ## Structure
 
@@ -39,11 +39,13 @@ verification.
 
 ## Open gates
 
-| Gate                                       | What closes it                                                 |
-| ------------------------------------------ | -------------------------------------------------------------- |
-| Provider and model selection               | A recorded decision plus explicit authorization for real calls |
-| Small integration pilot against a real API | The gate above, and explicit approval                          |
-| Full experiment (corpus, metrics, rubric)  | End-to-end integration, then authorization                     |
+| Gate                                      | What closes it                                                  |
+| ----------------------------------------- | --------------------------------------------------------------- |
+| Real API calls                            | Explicit authorization; `allowRealApi` stays `false` until then |
+| Provider and model selection              | A recorded decision plus the authorization above                |
+| Corpus version and seeds frozen           | CodeXGLUE download with date and fixed seeds in `protocol.json` |
+| Small pilot against a real API (30-50 fn) | The three gates above, and explicit approval                    |
+| Full experiment (corpus, metrics, rubric) | A green pilot, then authorization                               |
 
 Until those gates close, the generation layer stays on the mock client and no
 external request is made. Cache files are local, ignored by Git and are not

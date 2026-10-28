@@ -181,4 +181,19 @@ describe('local web app', () => {
       { id: 'assemble', status: 'no ejecutado' },
     ]);
   });
+
+  it('distinguishes an unknown route from a supported route with a wrong method', async () => {
+    const wrongMethod = await fetch(`${baseUrl}/api/analyze`);
+    assert.equal(wrongMethod.status, 405);
+    assert.equal(wrongMethod.headers.get('allow'), 'POST');
+    const body = (await wrongMethod.json()) as { error: string };
+    assert.match(body.error, /POST/);
+
+    const wrongMethodOnPage = await fetch(`${baseUrl}/`, { method: 'POST' });
+    assert.equal(wrongMethodOnPage.status, 405);
+    assert.equal(wrongMethodOnPage.headers.get('allow'), 'GET');
+
+    const unknown = await fetch(`${baseUrl}/api/unknown`);
+    assert.equal(unknown.status, 404);
+  });
 });

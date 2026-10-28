@@ -7,6 +7,20 @@ import { sendJson } from './http.ts';
 
 const pagePath = fileURLToPath(new URL('../../../ui/index.html', import.meta.url));
 
+type Handler = (request: IncomingMessage, response: ServerResponse) => Promise<void>;
+
+interface Route {
+  readonly method: 'GET' | 'POST';
+  readonly handle: Handler;
+}
+
+const routes = new Map<string, Route>([
+  ['/', { method: 'GET', handle: servePage }],
+  ['/index.html', { method: 'GET', handle: servePage }],
+  ['/api/analyze', { method: 'POST', handle: handleAnalyzeRoute }],
+  ['/api/compare', { method: 'POST', handle: handleCompareRoute }],
+]);
+
 /** Creates the local UI server; exported to support HTTP integration tests. */
 export function createAppServer() {
   return createServer((request, response) => {
@@ -18,26 +32,31 @@ export function createAppServer() {
   });
 }
 
+async function servePage(_request: IncomingMessage, response: ServerResponse): Promise<void> {
+  try {
+    const page = await readFile(pagePath);
+    response.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+    response.end(page);
+  } catch {
+    sendJson(response, 500, { error: 'No se pudo cargar la interfaz local.' });
+  }
+}
+
 async function routeRequest(request: IncomingMessage, response: ServerResponse): Promise<void> {
-  if (request.method === 'GET' && (request.url === '/' || request.url === '/index.html')) {
-    try {
-      const page = await readFile(pagePath);
-      response.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
-      response.end(page);
-    } catch {
-      sendJson(response, 500, { error: 'No se pudo cargar la interfaz local.' });
-    }
+  const { pathname } = new URL(request.url ?? '/', 'http://localhost');
+  const route = routes.get(pathname);
+  if (route === undefined) {
+    sendJson(response, 404, { error: 'Ruta no encontrada.' });
     return;
   }
-  if (request.method === 'POST' && request.url === '/api/analyze') {
-    await handleAnalyzeRoute(request, response);
+  if (request.method !== route.method) {
+    response.setHeader('allow', route.method);
+    sendJson(response, 405, {
+      error: `Método no permitido en ${pathname}; usa ${route.method}.`,
+    });
     return;
   }
-  if (request.method === 'POST' && request.url === '/api/compare') {
-    await handleCompareRoute(request, response);
-    return;
-  }
-  sendJson(response, 404, { error: 'Ruta no encontrada.' });
+  await route.handle(request, response);
 }
 
 if (process.argv[1] !== undefined && fileURLToPath(import.meta.url) === process.argv[1]) {
