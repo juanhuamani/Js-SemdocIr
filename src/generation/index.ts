@@ -1,10 +1,11 @@
-export {
+﻿export {
   createRepresentationJobs,
   runRepresentationJob,
   type RepresentationJob,
   type RepresentationJobResult,
 } from './orchestrator.ts';
-export { GenerationService, createGenerationCacheKey } from './generation-service.ts';
+export { GenerationService } from './generation-service.ts';
+export { createGenerationCacheKey } from './cache-key.ts';
 export { MockGenerationClient, MOCK_OUTPUT } from './mock.ts';
 export { FileGenerationCache, type GenerationCache, type GenerationCacheRecord } from './cache.ts';
 export { GenerationClientError, type GenerationClient, type GenerationResponse } from './client.ts';

@@ -55,10 +55,10 @@ Parser version is frozen at `@babel/parser@8.0.7` with `sourceType:
 
 ## File size budget
 
-No file under `src/` should exceed **250 lines**. A file that grows past it is
-a sign it holds two responsibilities, not one. Current exception:
-`generation/generation-service.ts` (312 lines), to be split when the
-generation ports land (phase 4).
+No file under `src/` may exceed **300 lines**; `scripts/check-size.mjs` fails
+the build above it. A file that grows past the budget is holding two
+responsibilities, not one. The largest file today is
+`generation/generation-service.ts` (289 lines).
 
 ## Representation P
 

@@ -1,8 +1,8 @@
-// src/client/generation-service.ts — cache, bounded retry, and resume (F2.6).
+﻿// src/client/generation-service.ts — cache, bounded retry, and resume (F2.6).
 
-import { createHash } from 'node:crypto';
-
-import { GenerationClientError, type GenerationClient, type GenerationResponse } from './client.ts';
+import type { GenerationClient, GenerationResponse } from './client.ts';
+import { createGenerationCacheKey } from './cache-key.ts';
+import { delay, toPersistedError } from './errors.ts';
 import {
   type GenerationAttempt,
   type GenerationCache,
@@ -42,30 +42,6 @@ export interface GenerationServiceOptions {
 }
 
 const defaultProtocol = loadProtocolConfig();
-
-/**
- * Builds a stable cache key from request identity and all generation inputs.
- * The input is represented by its SHA-256 hash to avoid embedding code in the
- * key while still invalidating cache entries when the representation changes.
- *
- * @param request - Fully assembled generation request.
- * @returns Lowercase SHA-256 cache key.
- */
-export function createGenerationCacheKey(request: GenerationRequest): string {
-  const keyMaterial = {
-    functionId: request.functionId,
-    representation: request.representation,
-    clientMode: request.clientMode,
-    provider: request.provider,
-    model: request.model,
-    modelVersion: request.modelVersion,
-    protocolVersion: request.protocolVersion,
-    prompt: request.prompt,
-    parameters: request.parameters,
-    inputHash: createHash('sha256').update(request.input, 'utf8').digest('hex'),
-  };
-  return createHash('sha256').update(JSON.stringify(keyMaterial), 'utf8').digest('hex');
-}
 
 /**
  * Provides idempotent generation with persistent success/error records and a
@@ -309,26 +285,4 @@ export class GenerationService {
     await this.cache.put(pending);
     return pending;
   }
-}
-
-function toPersistedError(error: unknown): PersistedGenerationError {
-  const name = error instanceof Error ? error.name : 'Error';
-  const message = error instanceof Error ? error.message : String(error);
-  const redact = (value: string): string =>
-    value
-      .replace(/\bBearer\s+[^\s,;]+/gi, 'Bearer [REDACTED]')
-      .replace(
-        /((?:["']?)(?:api[_-]?key|api[_-]?token|access[_-]?token|refresh[_-]?token|authorization|password|secret|token)(?:["']?)(\s*[:=]\s*["']?))([^"'\s,;}]+)(["']?)/gi,
-        '$1[REDACTED]$4',
-      );
-  const persisted: PersistedGenerationError = { name: name || 'Error', message: redact(message) };
-  if (error instanceof GenerationClientError) {
-    persisted.statusCode = error.statusCode;
-    persisted.responseBody = error.responseBody === null ? null : redact(error.responseBody);
-  }
-  return persisted;
-}
-
-function delay(milliseconds: number): Promise<void> {
-  return new Promise((resolveDelay) => setTimeout(resolveDelay, milliseconds));
 }

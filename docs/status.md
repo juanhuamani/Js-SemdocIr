@@ -24,9 +24,9 @@ Verification: `npm test` → **128 tests, 23 suites**, all passing.
 
 `src/` is organised by domain: `core/` (pure), `representations/`,
 `generation/`, `interfaces/`. The extractor, once 876 lines in a single class,
-is now a 139-line facade over `core/semdocir/rules/`. The largest remaining
-file is `generation/generation-service.ts` (312 lines), the split target of
-the generation phase.
+is now a 139-line facade over `core/semdocir/rules/`. No file exceeds 300
+lines; `npm run check:size` enforces it and CI runs the same checks as a local
+verification.
 
 ## Not implemented, by design
 

@@ -40,6 +40,7 @@ npm run test:integration
 npm run typecheck
 npm run lint
 npm run format:check
+npm run check:size
 ```
 
 ## Usage

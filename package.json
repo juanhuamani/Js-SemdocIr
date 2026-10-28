@@ -15,6 +15,7 @@
     "app": "node src/interfaces/http/server.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
+    "check:size": "node scripts/check-size.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
