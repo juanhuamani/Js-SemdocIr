@@ -107,6 +107,84 @@ describe('extractor — canonical instances (spec §3.3, frozen)', () => {
   });
 });
 
+describe('extractor — expression expansion (I-F2.7-01)', () => {
+  it('resolves the complete chain of pure assignments in RET and CALL (calcularPrecioFinal)', () => {
+    const source = [
+      'function calcularPrecioFinal(precioBase, impuesto, descuento) {',
+      '  const precioConImpuesto = precioBase * (1 + impuesto / 100);',
+      '  const montoDescuento = precioConImpuesto * (descuento / 100);',
+      '  const precioFinal = precioConImpuesto - montoDescuento;',
+      '  return precioFinal.toFixed(2);',
+      '}',
+    ].join('\n');
+    assert.deepEqual(lines(source), [
+      'INPUT precioBase',
+      'INPUT impuesto',
+      'INPUT descuento',
+      'CALL ((precioBase * (1 + impuesto / 100)) - ((precioBase * (1 + impuesto / 100)) * (descuento / 100))).toFixed(2)',
+      'RET ((precioBase * (1 + impuesto / 100)) - ((precioBase * (1 + impuesto / 100)) * (descuento / 100))).toFixed(2)',
+    ]);
+    assert.deepEqual(extract(source), extract(source));
+  });
+
+  it('resolves a deep chain of pure assignments completely (R2)', () => {
+    const source = 'function f(a) { const x = a + 1; const y = x * 2; const z = y - 3; return z; }';
+    assert.deepEqual(lines(source), ['INPUT a', 'RET ((a + 1) * 2) - 3']);
+  });
+
+  it('expands pure variables inside CALL arguments and COND guards (R3)', () => {
+    const source =
+      'function f(n) { const limit = n * 2; if (limit > 10) return check(limit); return 0; }';
+    assert.deepEqual(lines(source), [
+      'INPUT n',
+      'COND (n * 2) > 10 -> RET check((n * 2))',
+      'CALL check((n * 2))',
+      'RET 0',
+    ]);
+  });
+
+  it('does not substitute a reassigned variable', () => {
+    const source = 'function f(a) { let t = a * 2; t = a + 1; return t; }';
+    assert.deepEqual(lines(source), ['INPUT a', 'RET t']);
+  });
+
+  it('does not substitute a variable bound inside a branch or loop', () => {
+    const source = 'function f(a) { if (a) { const r = a * 2; return r; } return 0; }';
+    assert.deepEqual(lines(source), ['INPUT a', 'COND a -> RET r', 'RET 0']);
+  });
+
+  it('does not substitute a variable whose value comes from a call or await (R1 purity)', () => {
+    const source = 'async function f() { const data = await load(); return data.size; }';
+    assert.deepEqual(lines(source), [
+      'CALL load() -> data',
+      'ASYNC await load() -> data',
+      'RET data.size',
+    ]);
+  });
+
+  it('never expands a thrown expression (frozen getUser behavior)', () => {
+    const source =
+      'function f(a) { const message = a + "!"; if (!a) throw new Error(message); return a; }';
+    assert.deepEqual(lines(source), ['INPUT a', 'COND !a -> THROW Error(message)', 'RET a']);
+  });
+
+  it('keeps the consumed return of an ERR CATCH record unexpanded (strict R3)', () => {
+    const source =
+      'function f(a) { const v = a * 2; try { work(); } catch (e) { return v; } return 0; }';
+    assert.deepEqual(lines(source), ['INPUT a', 'CALL work()', 'ERR CATCH (e) -> RET v', 'RET 0']);
+  });
+
+  it('never substitutes a member property name (o.k stays o.k)', () => {
+    const source = 'function f(o, a) { const k = a + 1; return o.k; }';
+    assert.deepEqual(lines(source), ['INPUT o', 'INPUT a', 'RET o.k']);
+  });
+
+  it('does not substitute inside object shorthand values', () => {
+    const source = 'function f(a) { const b = a + 1; return { b }; }';
+    assert.deepEqual(lines(source), ['INPUT a', 'RET { b }']);
+  });
+});
+
 describe('extractor — frontiers and call sites (§1.1, §4.3-d/e, E7)', () => {
   it('does not traverse a nested function but registers its later call', () => {
     const source = [
@@ -134,9 +212,9 @@ describe('extractor — frontiers and call sites (§1.1, §4.3-d/e, E7)', () => 
     assert.deepEqual(lines(source), ['CALL work(1)']);
   });
 
-  it('does not register a plain initializer (x = 5)', () => {
+  it('does not register a plain initializer (x = 5); its value now expands into RET (I-F2.7-01)', () => {
     const source = 'function f() { let x = 5; return x; }';
-    assert.deepEqual(lines(source), ['RET x']);
+    assert.deepEqual(lines(source), ['RET 5']);
   });
 
   it('gives the destination only when the initializer is the call itself', () => {

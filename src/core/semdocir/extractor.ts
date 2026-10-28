@@ -29,39 +29,43 @@
 //   - `ND external semantics` (§4.4) is DEFERRED to Phase 2: it requires
 //     import binding resolution, which an isolated fragment cannot provide.
 
-import type {
-  ArrowFunctionExpression,
-  AssignmentExpression,
-  AwaitExpression,
-  BreakStatement,
-  CallExpression,
-  CatchClause,
-  Comment,
-  ContinueStatement,
-  DoWhileStatement,
-  File,
-  ForInStatement,
-  ForOfStatement,
-  ForStatement,
-  FunctionDeclaration,
-  FunctionExpression,
-  IfStatement,
-  NewExpression,
-  Node,
-  OptionalCallExpression,
-  ReturnStatement,
-  Statement,
-  SwitchStatement,
-  TaggedTemplateExpression,
-  ThrowStatement,
-  TryStatement,
-  UnaryExpression,
-  VariableDeclaration,
-  VariableDeclarator,
-  WhileStatement,
+import {
+  VISITOR_KEYS,
+  type ArrowFunctionExpression,
+  type AssignmentExpression,
+  type AwaitExpression,
+  type BreakStatement,
+  type CallExpression,
+  type CatchClause,
+  type ClassMethod,
+  type ClassPrivateMethod,
+  type Comment,
+  type ContinueStatement,
+  type DoWhileStatement,
+  type File,
+  type ForInStatement,
+  type ForOfStatement,
+  type ForStatement,
+  type FunctionDeclaration,
+  type FunctionExpression,
+  type IfStatement,
+  type NewExpression,
+  type Node,
+  type ObjectMethod,
+  type OptionalCallExpression,
+  type ReturnStatement,
+  type Statement,
+  type SwitchStatement,
+  type TaggedTemplateExpression,
+  type ThrowStatement,
+  type TryStatement,
+  type UnaryExpression,
+  type VariableDeclaration,
+  type VariableDeclarator,
+  type WhileStatement,
 } from '@babel/types';
 
-import { walk } from '../ast/walk.ts';
+import { ABORT, isNode, walk } from '../ast/walk.ts';
 import { detectUnit, type Unit } from '../ast/filter.ts';
 
 /** Categories in canonical order (E2). */
@@ -106,11 +110,23 @@ type DirectEffectNode = BreakStatement | ContinueStatement | ReturnStatement | T
 /** Loop statements rendered as `COND LOOP <header>` (§4.2, E6). */
 type LoopNode = DoWhileStatement | ForInStatement | ForOfStatement | ForStatement | WhileStatement;
 
+/** Function-like nodes: traversal frontiers for binding analysis (I-F2.7-01). */
+type FunctionLikeAll = FunctionNode | ObjectMethod | ClassMethod | ClassPrivateMethod;
+
 function isFunctionNode(node: Node): node is FunctionNode {
   return (
     node.type === 'FunctionDeclaration' ||
     node.type === 'FunctionExpression' ||
     node.type === 'ArrowFunctionExpression'
+  );
+}
+
+function isFunctionLikeNode(node: Node): node is FunctionLikeAll {
+  return (
+    isFunctionNode(node) ||
+    node.type === 'ObjectMethod' ||
+    node.type === 'ClassMethod' ||
+    node.type === 'ClassPrivateMethod'
   );
 }
 
@@ -148,6 +164,51 @@ function isDynamicUnary(node: Node): node is UnaryExpression {
 /** Destructuring targets are not representable as a single `<ident>` (§4.4). */
 function isDestructuring(node: Node): boolean {
   return node.type === 'ArrayPattern' || node.type === 'ObjectPattern';
+}
+
+/** Maximum nesting of substitutions; a safety guard, not a semantic limit. */
+const MAX_EXPANSION_DEPTH = 32;
+
+/** A free-variable reference position used by expression expansion (I-F2.7-01). */
+interface IdentifierPosition {
+  name: string;
+  start: number;
+  end: number;
+}
+
+/**
+ * Collects the names bound by a binding pattern (declarators, assignment
+ * targets, catch and function parameters). Used only to COUNT binding events
+ * by name, never to substitute (I-F2.7-01).
+ *
+ * @param pattern - Binding pattern node.
+ * @param count - Receives each bound name.
+ */
+function collectPatternNames(pattern: Node, count: (name: string) => void): void {
+  switch (pattern.type) {
+    case 'Identifier':
+      count(pattern.name);
+      return;
+    case 'AssignmentPattern':
+      collectPatternNames(pattern.left, count);
+      return;
+    case 'RestElement':
+      collectPatternNames(pattern.argument, count);
+      return;
+    case 'ArrayPattern':
+      for (const element of pattern.elements) {
+        if (element !== null) collectPatternNames(element, count);
+      }
+      return;
+    case 'ObjectPattern':
+      for (const property of pattern.properties) {
+        if (property.type === 'RestElement') collectPatternNames(property, count);
+        else if (property.type === 'ObjectProperty') collectPatternNames(property.value, count);
+      }
+      return;
+    default:
+      return; // unsupported shapes never parse under the frozen parser config
+  }
 }
 
 /** Collapses runs of whitespace to one space and trims (E3). */
@@ -195,6 +256,11 @@ class SourceView {
   span(start: number, end: number): string {
     return normalize(this.clean.slice(start, end));
   }
+
+  /** Un-normalized text between two character offsets (comments blanked). */
+  raw(start: number, end: number): string {
+    return this.clean.slice(start, end);
+  }
 }
 
 /** Extracts the records of one admitted unit. Single use. */
@@ -203,6 +269,10 @@ class Extractor {
   private readonly records: Record[] = [];
   private counter = 0;
   private hasThrow = false;
+  /** Binding-event counts by name across the COMPLETE function (I-F2.7-01). */
+  private readonly bindingCounts = new Map<string, number>();
+  /** Substitutable pure single assignments: name → right-hand side node. */
+  private readonly pureBindings = new Map<string, Node>();
 
   constructor(source: string, comments: readonly Comment[]) {
     this.view = new SourceView(source, comments);
@@ -214,6 +284,7 @@ class Extractor {
 
     const body = unit.node.body;
     if (body.type === 'BlockStatement') {
+      this.registerBindings(unit.node, body.body);
       this.extractStatements(body.body);
     } else {
       // Arrow with a concise body: implicit return (§4.3-i).
@@ -396,7 +467,7 @@ class Extractor {
       if (isOperationNode(node.argument)) this.emitOperation(node.argument, target);
       return;
     }
-    this.emit('CALL', `${this.verbatim(node)}${this.destination(target)}`);
+    this.emit('CALL', `${this.expanded(node)}${this.destination(target)}`);
     this.emitCalleeNonDeterminability(node);
   }
 
@@ -418,11 +489,227 @@ class Extractor {
   }
 
   // ---------------------------------------------------------------------------
+  // Expression expansion (I-F2.7-01)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Registers the substitutable pure bindings of the function body: names
+   * bound exactly once in the COMPLETE function (counted across nested
+   * functions for safety) whose single introduction is a top-level pure
+   * assignment. Pure means no operation sites, function values, dynamic
+   * operations, or mutations anywhere in the right-hand side (R1).
+   */
+  private registerBindings(functionNode: Node, statements: readonly Statement[]): void {
+    this.countBindingEvents(functionNode);
+
+    const candidates: Array<{ name: string; rhs: Node; index: number }> = [];
+    statements.forEach((statement, index) => {
+      if (statement.type === 'VariableDeclaration' && statement.declarations.length === 1) {
+        const declarator = statement.declarations[0];
+        if (
+          declarator !== undefined &&
+          declarator.id.type === 'Identifier' &&
+          declarator.init != null &&
+          this.isPureRhs(declarator.init)
+        ) {
+          candidates.push({ name: declarator.id.name, rhs: declarator.init, index });
+        }
+        return;
+      }
+      if (
+        statement.type === 'ExpressionStatement' &&
+        statement.expression.type === 'AssignmentExpression' &&
+        statement.expression.operator === '=' &&
+        statement.expression.left.type === 'Identifier' &&
+        this.isPureRhs(statement.expression.right)
+      ) {
+        candidates.push({
+          name: statement.expression.left.name,
+          rhs: statement.expression.right,
+          index,
+        });
+      }
+    });
+
+    // Cycle safety (R2): a candidate whose right-hand side references itself
+    // or a LATER candidate is rejected. Every cyclic reference chain contains
+    // such an edge, so no substitution can recurse forever.
+    const indexByName = new Map(candidates.map((candidate) => [candidate.name, candidate.index]));
+    const accepted = candidates.filter((candidate) => {
+      const positions: IdentifierPosition[] = [];
+      this.collectReferencePositions(candidate.rhs, positions);
+      return !positions.some(
+        (position) => (indexByName.get(position.name) ?? -1) >= candidate.index,
+      );
+    });
+
+    for (const { name, rhs } of accepted) {
+      if (this.bindingCounts.get(name) === 1) this.pureBindings.set(name, rhs);
+    }
+  }
+
+  /** Counts every binding event by name across the complete function subtree. */
+  private countBindingEvents(functionNode: Node): void {
+    const bump = (name: string): void => {
+      this.bindingCounts.set(name, (this.bindingCounts.get(name) ?? 0) + 1);
+    };
+
+    walk(functionNode, (node) => {
+      switch (node.type) {
+        case 'VariableDeclarator':
+          collectPatternNames(node.id, bump);
+          return undefined;
+        case 'AssignmentExpression':
+          collectPatternNames(node.left, bump);
+          return undefined;
+        case 'UpdateExpression':
+          if (node.argument.type === 'Identifier') bump(node.argument.name);
+          return undefined;
+        case 'CatchClause':
+          if (node.param != null) collectPatternNames(node.param, bump);
+          return undefined;
+        case 'ForInStatement':
+        case 'ForOfStatement':
+          if (node.left.type !== 'VariableDeclaration') collectPatternNames(node.left, bump);
+          return undefined;
+        default:
+          if (isFunctionLikeNode(node)) {
+            for (const param of node.params) collectPatternNames(param, bump);
+          }
+          return undefined;
+      }
+    });
+  }
+
+  /**
+   * A pure right-hand side (R1): no operation sites, function values, dynamic
+   * operations, mutations, or nested assignments anywhere inside.
+   */
+  private isPureRhs(node: Node): boolean {
+    let pure = true;
+    walk(node, (current) => {
+      if (
+        isOperationNode(current) ||
+        isFunctionLikeNode(current) ||
+        isDynamicUnary(current) ||
+        current.type === 'UpdateExpression' ||
+        current.type === 'AssignmentExpression' ||
+        current.type === 'YieldExpression'
+      ) {
+        pure = false;
+        return ABORT;
+      }
+      return undefined;
+    });
+    return pure;
+  }
+
+  /**
+   * Collects the free-variable reference positions of `node` in expression
+   * context. Skips function frontiers, non-computed member/property keys,
+   * shorthand object values, and assignment/update targets, which are never
+   * substitutable references.
+   */
+  private collectReferencePositions(node: Node, out: IdentifierPosition[]): void {
+    if (isFunctionLikeNode(node)) return;
+    switch (node.type) {
+      case 'Identifier': {
+        if (typeof node.start === 'number' && typeof node.end === 'number') {
+          out.push({ name: node.name, start: node.start, end: node.end });
+        }
+        return;
+      }
+      case 'MemberExpression':
+      case 'OptionalMemberExpression': {
+        this.collectReferencePositions(node.object, out);
+        if (node.computed) this.collectReferencePositions(node.property, out);
+        return;
+      }
+      case 'ObjectProperty': {
+        if (node.computed) this.collectReferencePositions(node.key, out);
+        if (!node.shorthand) this.collectReferencePositions(node.value, out);
+        return;
+      }
+      case 'AssignmentExpression': {
+        this.collectReferencePositions(node.right, out);
+        return; // the left side is an assignment target, not a reference
+      }
+      case 'UpdateExpression':
+        return; // the argument is a mutation target, not a reference
+      default: {
+        const record = node as unknown as { [key: string]: unknown };
+        for (const key of VISITOR_KEYS[node.type] ?? []) {
+          const child = record[key];
+          if (Array.isArray(child)) {
+            for (const entry of child) {
+              if (isNode(entry)) this.collectReferencePositions(entry, out);
+            }
+          } else if (isNode(child)) {
+            this.collectReferencePositions(child, out);
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Expanded rendering for RET/CALL/COND records (I-F2.7-01): like `verbatim`,
+   * but each free reference to a registered pure binding is replaced by its
+   * own expanded rendering wrapped in parentheses. Substitution recurses
+   * until no registered variable remains (R2), with a depth guard.
+   */
+  private expanded(node: Node | null | undefined, depth = 0): string {
+    if (node == null) return '';
+    if (depth >= MAX_EXPANSION_DEPTH) return this.verbatim(node);
+
+    if (node.type === 'Identifier' && this.pureBindings.has(node.name)) {
+      return this.expanded(this.pureBindings.get(node.name), depth + 1);
+    }
+
+    let baseStart = node.start;
+    const baseEnd = node.end;
+    if (node.type === 'NewExpression' && node.callee.start != null && node.end != null) {
+      baseStart = node.callee.start;
+    }
+    if (baseStart == null || baseEnd == null) return this.verbatim(node);
+
+    const positions: IdentifierPosition[] = [];
+    this.collectReferencePositions(node, positions);
+    const occurrences = positions.filter(
+      (position) =>
+        position.start >= baseStart &&
+        position.end <= baseEnd &&
+        this.pureBindings.has(position.name),
+    );
+    if (occurrences.length === 0) return this.view.span(baseStart, baseEnd);
+
+    occurrences.sort((left, right) => left.start - right.start);
+    let text = '';
+    let cursor = baseStart;
+    for (const occurrence of occurrences) {
+      if (occurrence.start < cursor) continue; // defensive: skip overlaps
+      text += this.view.raw(cursor, occurrence.start);
+      text += `(${this.expanded(this.pureBindings.get(occurrence.name), depth + 1)})`;
+      cursor = occurrence.end;
+    }
+    text += this.view.raw(cursor, baseEnd);
+    return normalize(text);
+  }
+
+  /**
+   * Returned value with expression expansion (I-F2.7-01), for RET records and
+   * the `-> RET` value inside COND records.
+   */
+  private expandedReturnedValue(statement: ReturnStatement): string {
+    return statement.argument == null ? 'undefined' : this.expanded(statement.argument);
+  }
+
+  // ---------------------------------------------------------------------------
   // Conditionals (E5)
   // ---------------------------------------------------------------------------
 
   private extractIf(statement: IfStatement): void {
-    const test = this.verbatim(statement.test);
+    const test = this.expanded(statement.test);
     this.extractValue(statement.test); // E7: top-level calls in the condition
     this.extractBranch(statement.consequent, test);
     const alternate = statement.alternate;
@@ -456,7 +743,7 @@ class Extractor {
   private emitGuardedEffect(effect: DirectEffectNode, guard: string): void {
     switch (effect.type) {
       case 'ReturnStatement': {
-        this.emit('COND', `${guard} -> RET ${this.returnedValue(effect)}`);
+        this.emit('COND', `${guard} -> RET ${this.expandedReturnedValue(effect)}`);
         // E4/E7: a returned call is also a call site, guarded or not.
         if (effect.argument != null) this.extractValue(effect.argument);
         return;
@@ -479,10 +766,10 @@ class Extractor {
   }
 
   private extractSwitch(statement: SwitchStatement): void {
-    this.emit('COND', `switch(${this.verbatim(statement.discriminant)})`);
+    this.emit('COND', `switch(${this.expanded(statement.discriminant)})`);
     this.extractValue(statement.discriminant);
     for (const caseClause of statement.cases) {
-      const guard = caseClause.test == null ? 'default' : `case ${this.verbatim(caseClause.test)}`;
+      const guard = caseClause.test == null ? 'default' : `case ${this.expanded(caseClause.test)}`;
       for (const inner of caseClause.consequent) {
         if (isDirectEffect(inner)) this.emitGuardedEffect(inner, guard);
         else this.extractStatement(inner);
@@ -549,7 +836,7 @@ class Extractor {
   // ---------------------------------------------------------------------------
 
   private extractReturn(statement: ReturnStatement): void {
-    this.emit('RET', this.returnedValue(statement));
+    this.emit('RET', this.expandedReturnedValue(statement));
     if (statement.argument != null) this.extractValue(statement.argument);
   }
 
@@ -646,6 +933,10 @@ class Extractor {
     return expression == null ? 'THROW' : `THROW ${this.verbatim(expression)}`;
   }
 
+  /**
+   * Returned value WITHOUT expansion. Used only for the consumed `RET` inside
+   * `ERR CATCH` records: strict R3 of I-F2.7-01 keeps ERR content unexpanded.
+   */
   private returnedValue(statement: ReturnStatement): string {
     return statement.argument == null ? 'undefined' : this.verbatim(statement.argument);
   }

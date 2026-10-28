@@ -4,3 +4,9 @@ npm-debug.log*
 .DS_Store
 .serena/
 .cache/
+
+#Rosetta
+agents/
+.opencode/
+refsrc/
+!refsrc/INDEX.md

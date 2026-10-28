@@ -71,7 +71,7 @@ No “corregir” estas reglas silenciosamente durante la Fase 2. Obtener una de
 
 Resultado registrado: `npm test` **76/76 aprobadas**; `npm run typecheck`, `npm run lint` y `npm run format:check` limpios. Las pruebas incluyen salidas exactas para ambos ejemplos canónicos, marcadores y casos enfocados de extracción.
 
-**Salvedad de aceptación formal:** `../fase1_extractor.md` todavía marca SF1.6 pendiente y especifica una suite dorada separada, escrita a mano, de al menos 40 casos de instancia completa, comando/reporte reproducible y comparación exacta de cadena completa (spec §5). El número de 76 pruebas no demuestra por sí solo que ese entregable distinto esté completo. Se puede continuar con Fase 2 bajo el supuesto de traspaso del usuario; antes de declarar aceptación formal G1/Fase 1, conciliar el seguimiento y producir la suite/reporte especificados o documentar un cambio aprobado del criterio. No modificar casos esperados congelados solo para hacer pasar las pruebas.
+**Salvedad de aceptación formal (RESUELTA 23 de octubre de 2026):** `../fase1_extractor.md` marcaba SF1.6 pendiente y exigía una suite dorada escrita a mano de al menos 40 casos. El asesor **enmendó el criterio** (registrado en `../registro_decisiones.md`, sección «Validación del asesor — 23 de octubre de 2026»): la suite existente de pruebas automatizadas del proyecto cuenta como evidencia formal de aceptación de la Fase 1; no se exige la suite de ≥40 instancias escritas a mano. La salvedad queda cerrada.
 
 ## 4. Objetivo y alcance de la Fase 2
 
@@ -124,7 +124,7 @@ Orden aplicado: F2.1, F2.2–F2.3, F2.4–F2.7 y F2.8. Mantener convenciones del
 
 ### Mantener configurable o bloqueado hasta resolver
 
-- **Validación del asesor:** `../registro_decisiones.md` marca D1–D7, E1–E9, Δ=0.5 y D6.1/congelamiento del modelo pendientes. No considerar la propuesta v1.0 aprobada por el asesor solo porque exista código.
+- **Validación del asesor:** el 23 de octubre de 2026 el asesor aprobó D1–D7, E1–E9, Δ=0.5, I-F2.1-01 e I-F2.6-01, y enmendó el criterio SF1.6/G1. **D6.1 sigue pendiente**: no hay proveedor/modelo congelado. La especificación v1.0 queda congelada; cambios posteriores se registran como nuevas entradas con justificación.
 - **Proveedor y versión fechada exacta:** elegir considerando ventana suficiente para el B1 admitido más largo, soporte de temperatura, identificador versionable/congelable, precio y presupuesto. Registrar proveedor, versión exacta, fecha de congelamiento y fecha de corte de API. Aquí no se elige modelo final.
 - **Piloto y gasto de API:** la especificación propone un piloto de 30–50 funciones para validar respuestas válidas/no vacías y repetibilidad, seguido del congelamiento D6.1. El piloto y cualquier uso de API externa requieren autorización explícita. No introducir secretos ni solicitudes pagadas implícitamente.
 - **Dataset y ejecución experimental:** versión/fecha CodeXGLUE, semillas y conteos de exclusión por corpus/ventana se resuelven en configuración posterior; este documento no autoriza descargar ni procesar el corpus completo.
@@ -199,8 +199,8 @@ La Fase 2 se considera completa solo cuando:
 - Inspeccionar el estado Git y ejecutar los cuatro comandos de §8 antes de cambiar código.
 - Empezar con un conjunto pequeño de fixtures AST escritos a mano para SBT/NIT, definiendo salida exacta y convenciones estables de nodos/hijos antes de construir serializadores.
 - Decidir y registrar contrato de IDs de función y rutas de artefactos antes de introducir caché/orquestación.
-- Mantener visible la salvedad formal SF1.6/G1 de Fase 1; cerrarla con suite/reporte reproducible de ≥40 instancias completas o enmendar formalmente el criterio de aceptación.
+- Salvedad formal SF1.6/G1 de Fase 1 cerrada el 23 de octubre de 2026 por enmienda del criterio aprobada por el asesor (la suite existente cuenta como evidencia formal); ver `../registro_decisiones.md`.
 
 ---
 
-**Estado del traspaso:** por indicación del usuario, la Fase 1 se asume completa para continuar con la Fase 2. La aprobación de especificación, el congelamiento del modelo exacto, la autorización de piloto/API y la salvedad formal de evidencia SF1.6 siguen siendo compuertas explícitas. Este estado no implica aprobación de decisiones de tesis pendientes ni autorización para ejecutar el experimento.
+**Estado del traspaso (actualizado 23 de octubre de 2026):** Fase 1 formalmente aceptada bajo el criterio enmendado de SF1.6/G1; D1–D7, E1–E9, Δ=0.5, I-F2.1-01 e I-F2.6-01 validados por el asesor. Siguen siendo compuertas explícitas: el congelamiento del modelo (D6.1), la autorización del piloto (30–50 funciones), las llamadas reales a la API y el experimento completo. Mientras D6.1 no se resuelva, el cliente real permanece desactivado (`allowRealApi: false`) y la Fase 2 opera con mock.

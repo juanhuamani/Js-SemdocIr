@@ -113,6 +113,9 @@ keeps provider/model unset and `allowRealApi` false pending approval.
 - Source-preserving expressions with normalized whitespace and removed comments
 - Canonical category ordering and bilateral absence markers
 - Non-determinable (`ND`) records for supported local cases
+- Expression expansion (I-F2.7-01): pure top-level assignments are substituted
+  recursively in `RET`, `CALL`, and `COND` records, so P carries the full data
+  flow of the function
 - Exact unit tests for canonical examples and extraction edge cases
 - Deterministic SBT and NIT serializers with golden fixtures
 - Shared B0/B1/B2/P identity and artifact metadata

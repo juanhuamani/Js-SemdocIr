@@ -1,2 +1,15 @@
 node_modules/
 package-lock.json
+
+# Rosetta/opencode agent instructions — not project source files.
+.opencode/
+agents/
+CODEMAP.md
+docs/ARCHITECTURE.md
+docs/ASSUMPTIONS.md
+docs/CONTEXT.md
+docs/DEPENDENCIES.md
+docs/PATTERNS/
+docs/TECHSTACK.md
+docs/TODO.md
+gain.json
