@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { analyzeFunction } from '../src/core/ast/analysis.ts';
+import { analyzeFunction } from '../src/core/ast/index.ts';
 import { buildRepresentationBundle } from '../src/evaluation/representations/index.ts';
 
 describe('shared core analysis', () => {

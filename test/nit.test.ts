@@ -6,9 +6,8 @@ import { describe, it } from 'node:test';
 
 import type { Node } from '@babel/types';
 
-import { detectUnit } from '../src/filter.ts';
-import { parseFunction } from '../src/parse.ts';
-import { serializeNit } from '../src/serializers/nit.ts';
+import { detectUnit, parseFunction } from '../src/core/ast/index.ts';
+import { serializeNit } from '../src/evaluation/representations/index.ts';
 
 interface SerializerFixture {
   name: string;

@@ -6,13 +6,21 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
-import { type GenerationClient, type GenerationResponse } from '../src/client/client.ts';
-import { FileGenerationCache } from '../src/client/cache.ts';
-import { createGenerationCacheKey, GenerationService } from '../src/client/generation-service.ts';
-import { MockGenerationClient } from '../src/client/mock.ts';
-import { createRepresentationJobs, runRepresentationJob } from '../src/orchestrator.ts';
-import { buildRepresentationBundle, REPRESENTATION_IDS } from '../src/representations.ts';
-import { buildGenerationRequest } from '../src/request.ts';
+import {
+  buildGenerationRequest,
+  createGenerationCacheKey,
+  createRepresentationJobs,
+  FileGenerationCache,
+  GenerationService,
+  MockGenerationClient,
+  runRepresentationJob,
+  type GenerationClient,
+  type GenerationResponse,
+} from '../src/evaluation/generation/index.ts';
+import {
+  buildRepresentationBundle,
+  REPRESENTATION_IDS,
+} from '../src/evaluation/representations/index.ts';
 
 function response(output: string): GenerationResponse {
   return {

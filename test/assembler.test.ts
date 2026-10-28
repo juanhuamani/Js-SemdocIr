@@ -3,9 +3,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { assemble } from '../src/assembler.ts';
-import { extractFunction } from '../src/extractor.ts';
-import { parseFunction } from '../src/parse.ts';
+import { assemble } from '../src/core/semdocir/index.ts';
+import { extractFunction } from '../src/core/semdocir/index.ts';
+import { parseFunction } from '../src/core/ast/index.ts';
 
 function instance(source: string): string {
   return assemble(extractFunction(source, parseFunction(source)));

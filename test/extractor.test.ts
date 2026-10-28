@@ -8,8 +8,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { CATEGORIES, extractFunction, type ExtractorResult } from '../src/extractor.ts';
-import { parseFunction } from '../src/parse.ts';
+import { CATEGORIES, extractFunction, type ExtractorResult } from '../src/core/semdocir/index.ts';
+import { parseFunction } from '../src/core/ast/index.ts';
 
 const CATEGORY_RANK = new Map(CATEGORIES.map((category, index) => [category, index]));
 

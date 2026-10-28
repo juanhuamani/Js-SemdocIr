@@ -7,14 +7,17 @@ import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
 import {
+  buildGenerationRequest,
+  createGenerationCacheKey,
+  FileGenerationCache,
   GenerationClientError,
+  GenerationService,
+  type GenerationCacheRecord,
   type GenerationClient,
+  type GenerationRequest,
   type GenerationResponse,
-} from '../src/client/client.ts';
-import { FileGenerationCache, type GenerationCacheRecord } from '../src/client/cache.ts';
-import { createGenerationCacheKey, GenerationService } from '../src/client/generation-service.ts';
-import { buildRepresentationBundle } from '../src/representations.ts';
-import { buildGenerationRequest, type GenerationRequest } from '../src/request.ts';
+} from '../src/evaluation/generation/index.ts';
+import { buildRepresentationBundle } from '../src/evaluation/representations/index.ts';
 
 const fixedDate = new Date('2026-10-20T12:00:00.000Z');
 

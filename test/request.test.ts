@@ -4,14 +4,15 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
 
-import { MockGenerationClient, MOCK_OUTPUT } from '../src/client/mock.ts';
-import { buildRepresentationBundle } from '../src/representations.ts';
-import { buildGenerationRequest } from '../src/request.ts';
 import {
+  buildGenerationRequest,
   DOCUMENTATION_PROMPT,
   loadProtocolConfig,
+  MockGenerationClient,
+  MOCK_OUTPUT,
   validateProtocolConfig,
-} from '../src/protocol.ts';
+} from '../src/evaluation/generation/index.ts';
+import { buildRepresentationBundle } from '../src/evaluation/representations/index.ts';
 
 describe('F2.5 generation request and mock client', () => {
   it('loads the versioned protocol with real API disabled and no model selected', () => {

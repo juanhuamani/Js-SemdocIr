@@ -1,15 +1,13 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
 import {
+  createRepresentationJobs,
+  GenerationService,
+  MockGenerationClient,
+  runRepresentationJob,
   type GenerationCache,
   type GenerationCacheRecord,
-} from '../../evaluation/generation/cache.ts';
-import { GenerationService } from '../../evaluation/generation/generation-service.ts';
-import { MockGenerationClient } from '../../evaluation/generation/mock.ts';
-import {
-  createRepresentationJobs,
-  runRepresentationJob,
-} from '../../evaluation/generation/orchestrator.ts';
+} from '../../evaluation/generation/index.ts';
 import {
   buildRepresentationBundle,
   FunctionNotAdmittedError,

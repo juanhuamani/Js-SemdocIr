@@ -1,4 +1,4 @@
-# JS-SemDocIR
+﻿# JS-SemDocIR
 
 Deterministic JavaScript AST extraction and representation pipeline for
 functional documentation. The repository includes the Phase 1 extractor and a
@@ -61,9 +61,8 @@ pulsa `Ctrl+C` en la terminal.
 También está disponible el modo terminal con `npm run demo`.
 
 ```ts
-import { assemble } from './src/assembler.ts';
-import { extractFunction } from './src/extractor.ts';
-import { parseFunction } from './src/parse.ts';
+import { parseFunction } from './src/core/ast/index.ts';
+import { assemble, extractFunction } from './src/core/semdocir/index.ts';
 
 const source = [
   'async function getUser(id) {',
@@ -78,14 +77,18 @@ console.log(instance);
 
 ## Phase 2 local mock pipeline
 
-See [`docs/phase2.md`](docs/phase2.md) for representation, request, cache,
-retry, and recovery contracts. A job can be run without an external service:
+See [`docs/design.md`](docs/design.md) for the module map and
+[`docs/status.md`](docs/status.md) for what is implemented. A job can be run
+without an external service:
 
 ```ts
-import { GenerationService } from './src/client/generation-service.ts';
-import { MockGenerationClient } from './src/client/mock.ts';
-import { createRepresentationJobs, runRepresentationJob } from './src/orchestrator.ts';
-import { buildRepresentationBundle } from './src/representations.ts';
+import {
+  GenerationService,
+  MockGenerationClient,
+  createRepresentationJobs,
+  runRepresentationJob,
+} from './src/evaluation/generation/index.ts';
+import { buildRepresentationBundle } from './src/evaluation/representations/index.ts';
 
 const bundle = buildRepresentationBundle('function identity(value) { return value; }', {
   sourceId: 'example:identity',
@@ -135,19 +138,21 @@ src/core/ast/                    Parser, AST walk, admission, shared analysis
 src/core/semdocir/               P extraction and canonical assembly
 src/evaluation/representations/  B0/B1/B2/P comparison artifacts
   serializers/                   SBT and NIT encoders
-src/evaluation/generation/       Experimental jobs, protocol, mock, cache
-src/web/routes/                  Product analysis and comparison HTTP routes
-src/client/                      Compatibility entry points for generation APIs
+src/evaluation/generation/       Jobs, protocol, mock client, cache
+src/web/routes/                  Analysis and comparison HTTP routes
 src/server.ts                    Local web server and route dispatch
-src/{parse,filter,extractor,assembler,request,protocol}.ts  Compatibility entry points
-src/{serializers,representations,orchestrator}.ts  Compatibility entry points
+src/cli.ts                       Terminal demo
+docs/design.md             Module map, contracts and design rules
+docs/status.md                   Implemented state and open gates
 protocol.json                    Non-secret, mock-only draft protocol
 test/                            Unit and mock integration tests
 ```
 
-The core analysis parses once and is the only path that builds P. The
-experimental comparator reuses that exact P and AST for B1/B2 serialization;
-the user-facing `/api/analyze` route remains separate from `/api/compare`.
+Each module is consumed through its `index.ts`; there are no compatibility
+re-export layers. The core analysis parses once and is the only path that
+builds P. The experimental comparator reuses that exact P and AST for B1/B2
+serialization; the user-facing `/api/analyze` route remains separate from
+`/api/compare`.
 
 ## License
 

@@ -82,3 +82,6 @@ export function buildRepresentationBundle(
 
   return { functionId, sourceId, sourceHash, artifacts };
 }
+
+export { serializeNit } from './serializers/nit.ts';
+export { serializeSbt } from './serializers/sbt.ts';

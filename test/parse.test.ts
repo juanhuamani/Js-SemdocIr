@@ -7,7 +7,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import type { FunctionDeclaration, Identifier, VariableDeclaration } from '@babel/types';
 
-import { parseFunction, PARSER_VERSION } from '../src/parse.ts';
+import { parseFunction, PARSER_VERSION } from '../src/core/ast/index.ts';
 
 test('parses a named FunctionDeclaration', () => {
   const ast = parseFunction('function add(a, b) { return a + b; }');

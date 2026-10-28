@@ -7,8 +7,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { parse } from '@babel/parser';
 
-import { parseFunction } from '../src/parse.ts';
-import { filter, detectUnit, CAUSES } from '../src/filter.ts';
+import { parseFunction } from '../src/core/ast/index.ts';
+import { filter, detectUnit, CAUSES } from '../src/core/ast/index.ts';
 
 function classify(source: string) {
   return filter(parseFunction(source));

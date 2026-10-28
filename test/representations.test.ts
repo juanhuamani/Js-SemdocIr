@@ -8,7 +8,7 @@ import {
   buildRepresentationBundle,
   FunctionNotAdmittedError,
   REPRESENTATION_IDS,
-} from '../src/representations.ts';
+} from '../src/evaluation/representations/index.ts';
 
 function sha256(value: string): string {
   return createHash('sha256').update(value, 'utf8').digest('hex');

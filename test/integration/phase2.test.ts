@@ -1,4 +1,4 @@
-// test/integration/phase2.test.ts — end-to-end local Phase 2 smoke test.
+﻿// test/integration/phase2.test.ts — end-to-end local Phase 2 smoke test.
 
 import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
@@ -6,12 +6,20 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
-import { type GenerationClient, type GenerationResponse } from '../../src/client/client.ts';
-import { FileGenerationCache } from '../../src/client/cache.ts';
-import { GenerationService } from '../../src/client/generation-service.ts';
-import { MockGenerationClient, MOCK_OUTPUT } from '../../src/client/mock.ts';
-import { createRepresentationJobs, runRepresentationJob } from '../../src/orchestrator.ts';
-import { buildRepresentationBundle, REPRESENTATION_IDS } from '../../src/representations.ts';
+import {
+  createRepresentationJobs,
+  FileGenerationCache,
+  GenerationService,
+  MockGenerationClient,
+  MOCK_OUTPUT,
+  runRepresentationJob,
+  type GenerationClient,
+  type GenerationResponse,
+} from '../../src/evaluation/generation/index.ts';
+import {
+  buildRepresentationBundle,
+  REPRESENTATION_IDS,
+} from '../../src/evaluation/representations/index.ts';
 
 class CountingMockClient implements GenerationClient {
   readonly requests: Parameters<GenerationClient['generate']>[0][] = [];
