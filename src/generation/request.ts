@@ -1,7 +1,7 @@
 // src/request.ts — one-representation generation request (F2.5).
 
 import type { RepresentationArtifact } from '../representations/index.ts';
-import { loadProtocolConfig, type ProtocolConfig } from './protocol.ts';
+import { loadProtocolConfig, type ProtocolFileConfig } from './protocol.ts';
 
 /** A single input to a generation provider. */
 export interface GenerationRequest {
@@ -19,6 +19,8 @@ export interface GenerationRequest {
     topP: string;
     maxTokens: number;
     seed: number | null;
+    /** Provider reasoning level; `off` avoids spending the output budget on it. */
+    reasoningEffort: string | null;
   };
 }
 
@@ -31,7 +33,7 @@ export interface GenerationRequest {
  */
 export function buildGenerationRequest(
   artifact: RepresentationArtifact,
-  protocol: ProtocolConfig = loadProtocolConfig(),
+  protocol: ProtocolFileConfig = loadProtocolConfig(),
 ): GenerationRequest {
   return {
     protocolVersion: protocol.protocolVersion,
@@ -48,6 +50,8 @@ export function buildGenerationRequest(
       topP: protocol.generation.topP,
       maxTokens: protocol.generation.maxTokens,
       seed: protocol.generation.seed,
+      reasoningEffort:
+        'reasoningEffort' in protocol.generation ? protocol.generation.reasoningEffort : null,
     },
   };
 }

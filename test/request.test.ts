@@ -45,6 +45,7 @@ describe('F2.5 generation request and mock client', () => {
       topP: 'provider-default',
       maxTokens: 128,
       seed: null,
+      reasoningEffort: null,
     });
     assert.equal('representations' in request, false);
   });

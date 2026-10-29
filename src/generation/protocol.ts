@@ -30,6 +30,50 @@ export interface ProtocolConfig {
   };
 }
 
+/** Provider reasoning levels accepted by the frozen run. */
+export type ReasoningEffort = 'off' | 'low' | 'medium' | 'high' | 'xhigh' | 'max';
+
+const REASONING_EFFORTS: ReadonlySet<string> = new Set([
+  'off',
+  'low',
+  'medium',
+  'high',
+  'xhigh',
+  'max',
+]);
+
+/** Real-call settings, allowed only once the protocol is frozen. */
+export interface FrozenGenerationSettings {
+  clientMode: 'provider';
+  allowRealApi: true;
+  provider: string;
+  model: string;
+  /** Provider snapshot or version string frozen for the run. */
+  modelVersion: string;
+  temperature: 0;
+  topP: 'provider-default';
+  maxTokens: 128;
+  seed: number | null;
+  /**
+   * Provider reasoning level. `off` keeps the 128-token budget for the comment;
+   * with reasoning enabled the model spends the budget thinking and returns an
+   * empty or truncated answer.
+   */
+  reasoningEffort: ReasoningEffort | null;
+}
+
+/** Protocol variant used by the experiment run: real calls, frozen settings. */
+export interface FrozenProtocolConfig {
+  protocolVersion: string;
+  status: 'frozen';
+  prompt: string;
+  generation: FrozenGenerationSettings;
+  retry: ProtocolConfig['retry'];
+}
+
+/** Any protocol document the loader accepts. */
+export type ProtocolFileConfig = ProtocolConfig | FrozenProtocolConfig;
+
 const SECRET_PROPERTY_NAMES = new Set([
   'apikey',
   'apitoken',
@@ -58,6 +102,18 @@ function containsSecretProperty(value: unknown): boolean {
     const normalized = key.replaceAll(/[^a-z]/gi, '').toLowerCase();
     return SECRET_PROPERTY_NAMES.has(normalized) || containsSecretProperty(child);
   });
+}
+
+/**
+ * Reports whether a retry block matches the frozen three-attempt policy.
+ *
+ * @param retry - Candidate retry block.
+ * @returns `true` when the policy is exactly the expected one.
+ */
+function hasValidRetry(retry: unknown): boolean {
+  if (retry === null || typeof retry !== 'object') return false;
+  const value = retry as ProtocolConfig['retry'];
+  return value.maxAttempts === 3 && value.initialDelayMs === 1000 && value.backoffMultiplier === 2;
 }
 
 /**
@@ -93,10 +149,7 @@ export function validateProtocolConfig(value: unknown): ProtocolConfig {
     generation.topP !== 'provider-default' ||
     generation.maxTokens !== 128 ||
     generation.seed !== null ||
-    retry === undefined ||
-    retry.maxAttempts !== 3 ||
-    retry.initialDelayMs !== 1000 ||
-    retry.backoffMultiplier !== 2
+    !hasValidRetry(retry)
   ) {
     throw new TypeError('Protocol configuration does not match the safe F2.5 draft');
   }
@@ -115,4 +168,81 @@ export function loadProtocolConfig(
 ): ProtocolConfig {
   const parsed: unknown = JSON.parse(readFileSync(path, 'utf8'));
   return validateProtocolConfig(parsed);
+}
+
+/**
+ * Validates and narrows unknown JSON data to a frozen, real-call protocol.
+ *
+ * The frozen variant is the only one that permits a provider, a model and
+ * `allowRealApi: true`; the draft validator keeps rejecting those values.
+ *
+ * @param value - Parsed JSON value.
+ * @returns A validated frozen protocol.
+ * @throws {TypeError} If the shape, prompt or safety constraints are invalid.
+ */
+export function validateFrozenProtocolConfig(value: unknown): FrozenProtocolConfig {
+  if (containsSecretProperty(value)) {
+    throw new TypeError('Protocol configuration must not contain secret fields');
+  }
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    throw new TypeError('Protocol configuration must be a JSON object');
+  }
+
+  const config = value as Partial<FrozenProtocolConfig>;
+  const generation = config.generation;
+  if (
+    typeof config.protocolVersion !== 'string' ||
+    config.protocolVersion.length === 0 ||
+    config.status !== 'frozen' ||
+    config.prompt !== DOCUMENTATION_PROMPT ||
+    generation === undefined ||
+    generation.clientMode !== 'provider' ||
+    generation.allowRealApi !== true ||
+    typeof generation.provider !== 'string' ||
+    generation.provider.length === 0 ||
+    typeof generation.model !== 'string' ||
+    generation.model.length === 0 ||
+    typeof generation.modelVersion !== 'string' ||
+    generation.modelVersion.length === 0 ||
+    generation.temperature !== 0 ||
+    generation.topP !== 'provider-default' ||
+    generation.maxTokens !== 128 ||
+    !(generation.seed === null || typeof generation.seed === 'number') ||
+    !(
+      generation.reasoningEffort === null ||
+      REASONING_EFFORTS.has(generation.reasoningEffort as string)
+    ) ||
+    !hasValidRetry(config.retry)
+  ) {
+    throw new TypeError('Protocol configuration does not match a frozen run');
+  }
+
+  return config as FrozenProtocolConfig;
+}
+
+/**
+ * Validates a protocol document of either variant, dispatching on `status`.
+ *
+ * @param value - Parsed JSON value.
+ * @returns The validated draft or frozen protocol.
+ */
+export function validateProtocolFile(value: unknown): ProtocolFileConfig {
+  const status =
+    value !== null && typeof value === 'object'
+      ? (value as { status?: unknown }).status
+      : undefined;
+  return status === 'frozen' ? validateFrozenProtocolConfig(value) : validateProtocolConfig(value);
+}
+
+/**
+ * Loads a protocol file that may be the safe draft or a frozen run.
+ *
+ * @param path - Optional absolute path to a protocol JSON file.
+ * @returns Validated protocol of the matching variant.
+ */
+export function loadProtocolFileConfig(
+  path = fileURLToPath(new URL('../../protocol.json', import.meta.url)),
+): ProtocolFileConfig {
+  const parsed: unknown = JSON.parse(readFileSync(path, 'utf8'));
+  return validateProtocolFile(parsed);
 }

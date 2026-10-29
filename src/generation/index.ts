@@ -12,4 +12,21 @@ export { GenerationClientError, type GenerationClient, type GenerationResponse }
 export { buildGenerationRequest } from './request.ts';
 export type { GenerationRequest } from './request.ts';
 export { DOCUMENTATION_PROMPT, loadProtocolConfig, validateProtocolConfig } from './protocol.ts';
-export type { ProtocolConfig } from './protocol.ts';
+export {
+  loadProtocolFileConfig,
+  validateFrozenProtocolConfig,
+  validateProtocolFile,
+} from './protocol.ts';
+export type {
+  FrozenGenerationSettings,
+  FrozenProtocolConfig,
+  ProtocolConfig,
+  ProtocolFileConfig,
+} from './protocol.ts';
+export {
+  ProviderGenerationClient,
+  buildChatCompletionBody,
+  composeUserMessage,
+} from './provider-client.ts';
+export { loadProviderConfig } from './provider-config.ts';
+export type { ProviderConfig } from './provider-config.ts';

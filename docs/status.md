@@ -16,7 +16,7 @@ Last updated: 2026-10-28.
 | One-function × one-representation orchestration      | complete                  |
 | Local web app and terminal demo                      | complete                  |
 
-Verification: `npm test` → **131 tests, 24 suites**, all passing.
+Verification: `npm test` → **150 tests, 25 suites**, all passing.
 `npm run test:integration`, `npm run typecheck`, `npm run lint`,
 `npm run format:check` and `npm run check:size` also pass.
 
