@@ -55,9 +55,14 @@ Abre [http://127.0.0.1:4173](http://127.0.0.1:4173), pega la función y pulsa
 **Procesar función**. La pantalla muestra el flujo implementado y la salida P;
 **Cargar ejemplo** inserta `parseList`. B0/B1/B2 no se muestran porque son
 controles de comparación del protocolo experimental. El servidor solo escucha
-en el equipo local. La generación de comentarios no está configurada; no hace
-llamadas externas ni produce documentación con un modelo. Para detenerlo,
-pulsa `Ctrl+C` en la terminal.
+en el equipo local. Para detenerlo, pulsa `Ctrl+C` en la terminal.
+
+El botón **Ver comparación B0/B1/B2/P** abre las cuatro representaciones del
+mismo análisis. Cada tarjeta tiene **Enviar al modelo**: manda esa representación
+al proveedor configurado en `.env` y muestra la respuesta junto con el modelo,
+los tokens y la latencia. Es una vista de prueba: no escribe en la caché del
+experimento ni cuenta como evidencia. Sin `.env` completa, la ruta responde 503
+con la variable que falta.
 
 También está disponible el modo terminal con `npm run demo`.
 

@@ -2,7 +2,13 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'node:ht
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
-import { handleAnalyzeRoute, handleCompareRoute } from './routes/index.ts';
+import {
+  GenerationClientError,
+  loadProviderConfig,
+  ProviderGenerationClient,
+} from '../../generation/index.ts';
+import { createGenerateRoute, handleAnalyzeRoute, handleCompareRoute } from './routes/index.ts';
+import type { ProviderHandle } from './routes/index.ts';
 import { sendJson } from './http.ts';
 
 const pagePath = fileURLToPath(new URL('../../../ui/index.html', import.meta.url));
@@ -14,17 +20,39 @@ interface Route {
   readonly handle: Handler;
 }
 
-const routes = new Map<string, Route>([
-  ['/', { method: 'GET', handle: servePage }],
-  ['/index.html', { method: 'GET', handle: servePage }],
-  ['/api/analyze', { method: 'POST', handle: handleAnalyzeRoute }],
-  ['/api/compare', { method: 'POST', handle: handleCompareRoute }],
-]);
+/** Injection point for tests and for the real provider. */
+export interface AppServerOptions {
+  /** Resolves the client used by the UI probe; defaults to the environment. */
+  createProvider?: () => ProviderHandle;
+}
+
+/**
+ * Resolves the real provider from the environment.
+ *
+ * @returns Client and frozen model identifier.
+ * @throws {GenerationClientError} When a variable is missing or malformed.
+ */
+function defaultProvider(): ProviderHandle {
+  const config = loadProviderConfig();
+  if (config.model === null) {
+    throw new GenerationClientError('COMMANDCODE_MODEL no está definido');
+  }
+  return { client: new ProviderGenerationClient(config), model: config.model };
+}
 
 /** Creates the local UI server; exported to support HTTP integration tests. */
-export function createAppServer() {
+export function createAppServer(options: AppServerOptions = {}) {
+  const createProvider = options.createProvider ?? defaultProvider;
+  const routes = new Map<string, Route>([
+    ['/', { method: 'GET', handle: servePage }],
+    ['/index.html', { method: 'GET', handle: servePage }],
+    ['/api/analyze', { method: 'POST', handle: handleAnalyzeRoute }],
+    ['/api/compare', { method: 'POST', handle: handleCompareRoute }],
+    ['/api/generate', { method: 'POST', handle: createGenerateRoute(createProvider) }],
+  ]);
+
   return createServer((request, response) => {
-    void routeRequest(request, response).catch((error: unknown) => {
+    void routeRequest(request, response, routes).catch((error: unknown) => {
       sendJson(response, 500, {
         error: error instanceof Error ? error.message : String(error),
       });
@@ -42,7 +70,11 @@ async function servePage(_request: IncomingMessage, response: ServerResponse): P
   }
 }
 
-async function routeRequest(request: IncomingMessage, response: ServerResponse): Promise<void> {
+async function routeRequest(
+  request: IncomingMessage,
+  response: ServerResponse,
+  routes: Map<string, Route>,
+): Promise<void> {
   const { pathname } = new URL(request.url ?? '/', 'http://localhost');
   const route = routes.get(pathname);
   if (route === undefined) {
@@ -75,6 +107,7 @@ if (process.argv[1] !== undefined && fileURLToPath(import.meta.url) === process.
   });
   server.listen(port, '127.0.0.1', () => {
     console.log(`JS-SemDocIR listo en http://127.0.0.1:${port}`);
-    console.log('Servidor local · cliente mock · sin llamadas externas');
+    console.log('Servidor local · comparación con cliente mock');
+    console.log('Vista de prueba con el modelo real: /api/generate (requiere .env)');
   });
 }

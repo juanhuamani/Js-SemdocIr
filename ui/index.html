@@ -266,6 +266,32 @@
         color: var(--amber);
         font: 600 7px var(--mono);
       }
+      .model-block {
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px dashed var(--line);
+      }
+      .model-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .model-label {
+        color: var(--muted);
+        font: 600 7px var(--mono);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .model-output {
+        margin: 6px 0 0;
+        font-size: 11px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+      }
+      .model-output.error {
+        color: var(--red);
+      }
       .compare-empty {
         height: 100%;
         display: grid;
@@ -1142,6 +1168,16 @@ Pega una función y procesa para inspeccionar el AST que produce Babel.</pre>
               <span class="mock-output" data-mock-output="b0">Sin solicitud</span
               ><span class="mock-label">SALIDA MOCK</span>
             </div>
+            <div class="model-block">
+              <div class="model-head">
+                <span class="model-label">Modelo real</span
+                ><button class="compare-copy" data-run-model="b0" type="button" disabled>
+                  Enviar al modelo
+                </button>
+              </div>
+              <p class="model-output" data-model-output="b0" hidden></p>
+              <p class="model-label" data-model-meta="b0"></p>
+            </div>
           </article>
           <article class="compare-card" data-compare="b1">
             <div class="compare-head">
@@ -1160,6 +1196,16 @@ Pega una función y procesa para inspeccionar el AST que produce Babel.</pre>
             <div class="compare-foot">
               <span class="mock-output" data-mock-output="b1">Sin solicitud</span
               ><span class="mock-label">SALIDA MOCK</span>
+            </div>
+            <div class="model-block">
+              <div class="model-head">
+                <span class="model-label">Modelo real</span
+                ><button class="compare-copy" data-run-model="b1" type="button" disabled>
+                  Enviar al modelo
+                </button>
+              </div>
+              <p class="model-output" data-model-output="b1" hidden></p>
+              <p class="model-label" data-model-meta="b1"></p>
             </div>
           </article>
           <article class="compare-card" data-compare="b2">
@@ -1180,6 +1226,16 @@ Pega una función y procesa para inspeccionar el AST que produce Babel.</pre>
               <span class="mock-output" data-mock-output="b2">Sin solicitud</span
               ><span class="mock-label">SALIDA MOCK</span>
             </div>
+            <div class="model-block">
+              <div class="model-head">
+                <span class="model-label">Modelo real</span
+                ><button class="compare-copy" data-run-model="b2" type="button" disabled>
+                  Enviar al modelo
+                </button>
+              </div>
+              <p class="model-output" data-model-output="b2" hidden></p>
+              <p class="model-label" data-model-meta="b2"></p>
+            </div>
           </article>
           <article class="compare-card" data-compare="p">
             <div class="compare-head">
@@ -1198,6 +1254,16 @@ Pega una función y procesa para inspeccionar el AST que produce Babel.</pre>
             <div class="compare-foot">
               <span class="mock-output" data-mock-output="p">Sin solicitud</span
               ><span class="mock-label">SALIDA MOCK</span>
+            </div>
+            <div class="model-block">
+              <div class="model-head">
+                <span class="model-label">Modelo real</span
+                ><button class="compare-copy" data-run-model="p" type="button" disabled>
+                  Enviar al modelo
+                </button>
+              </div>
+              <p class="model-output" data-model-output="p" hidden></p>
+              <p class="model-label" data-model-meta="p"></p>
             </div>
           </article>
         </section>
@@ -1274,6 +1340,9 @@ Pega una función y procesa para inspeccionar el AST que produce Babel.</pre>
         }
       });
       run.addEventListener('click', analyze);
+      document.querySelectorAll('[data-run-model]').forEach((button) => {
+        button.addEventListener('click', () => runModel(button.dataset.runModel));
+      });
 
       function toggleView() {
         if (comparisonView.hidden) {
@@ -1338,6 +1407,7 @@ Pega una función y procesa para inspeccionar el AST que produce Babel.</pre>
             empty.hidden = false;
             document.querySelector(`[data-mock-output="${id}"]`).textContent = 'Sin solicitud';
             document.querySelector(`[data-copy-compare="${id}"]`).disabled = true;
+            document.querySelector(`[data-run-model="${id}"]`).disabled = true;
           }
         }
       }
@@ -1361,6 +1431,12 @@ Pega una función y procesa para inspeccionar el AST que produce Babel.</pre>
               : `Error mock: ${generation.error}`;
           document.querySelector(`[data-mock-output="${id}"]`).textContent = generationText;
           document.querySelector(`[data-copy-compare="${id}"]`).disabled = false;
+          document.querySelector(`[data-run-model="${id}"]`).disabled = false;
+          const modelOutput = document.querySelector(`[data-model-output="${id}"]`);
+          modelOutput.hidden = true;
+          modelOutput.className = 'model-output';
+          modelOutput.textContent = '';
+          document.querySelector(`[data-model-meta="${id}"]`).textContent = '';
         }
       }
 
@@ -1378,6 +1454,52 @@ Pega una función y procesa para inspeccionar el AST que produce Babel.</pre>
           document.querySelector(`[data-compare-path="${id}"]`).textContent = `repr/${id}/—`;
           document.querySelector(`[data-mock-output="${id}"]`).textContent = message;
           document.querySelector(`[data-copy-compare="${id}"]`).disabled = true;
+          document.querySelector(`[data-run-model="${id}"]`).disabled = true;
+          const modelOutput = document.querySelector(`[data-model-output="${id}"]`);
+          modelOutput.hidden = true;
+          modelOutput.className = 'model-output';
+          modelOutput.textContent = '';
+          document.querySelector(`[data-model-meta="${id}"]`).textContent = '';
+        }
+      }
+
+      async function runModel(id) {
+        const button = document.querySelector(`[data-run-model="${id}"]`);
+        const outputElement = document.querySelector(`[data-model-output="${id}"]`);
+        const metaElement = document.querySelector(`[data-model-meta="${id}"]`);
+        if (!source.value.trim()) {
+          outputElement.hidden = false;
+          outputElement.className = 'model-output error';
+          outputElement.textContent = 'Primero pega una función.';
+          return;
+        }
+        button.disabled = true;
+        button.textContent = 'Enviando…';
+        outputElement.hidden = false;
+        outputElement.className = 'model-output';
+        outputElement.textContent = 'Esperando al modelo…';
+        metaElement.textContent = '';
+        try {
+          const response = await fetch('/api/generate', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ source: source.value, representation: id }),
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            const detail = data.hint ? `${data.error} ${data.hint}` : data.detail || data.error;
+            throw new Error(detail || `Error ${response.status}`);
+          }
+          outputElement.textContent = data.output;
+          const input = data.metadata.inputTokens ?? '?';
+          const produced = data.metadata.outputTokens ?? '?';
+          metaElement.textContent = `${data.metadata.model} · ${input} → ${produced} tokens · ${data.metadata.latencyMs} ms`;
+        } catch (cause) {
+          outputElement.className = 'model-output error';
+          outputElement.textContent = cause instanceof Error ? cause.message : String(cause);
+        } finally {
+          button.disabled = false;
+          button.textContent = 'Enviar al modelo';
         }
       }
 

@@ -15,8 +15,9 @@ Last updated: 2026-10-28.
 | Local file cache, bounded retries, resumable records | complete                  |
 | One-function × one-representation orchestration      | complete                  |
 | Local web app and terminal demo                      | complete                  |
+| Interactive provider probe (`/api/generate`)         | complete, real provider   |
 
-Verification: `npm test` → **150 tests, 25 suites**, all passing.
+Verification: `npm test` → **158 tests, 26 suites**, all passing.
 `npm run test:integration`, `npm run typecheck`, `npm run lint`,
 `npm run format:check` and `npm run check:size` also pass.
 
