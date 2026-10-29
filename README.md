@@ -109,6 +109,30 @@ if (result.status === 'succeeded') {
 The mock marker is not generated documentation. `protocol.json` intentionally
 keeps provider/model unset and `allowRealApi` false pending approval.
 
+## Environment and secrets
+
+Copy the template and fill it locally:
+
+```bash
+cp .env.example .env
+```
+
+| Variable                 | Purpose                                                                     |
+| ------------------------ | --------------------------------------------------------------------------- |
+| `COMMANDCODE_API_KEY`    | Provider key. Required only for real calls.                                 |
+| `COMMANDCODE_BASE_URL`   | OpenAI-compatible endpoint, copied from the provider panel (include `/v1`). |
+| `COMMANDCODE_TIMEOUT_MS` | Per-call timeout in milliseconds. Defaults to 60000.                        |
+
+`.env` is ignored by git and must never be committed. No secret belongs in
+`protocol.json`: the validator rejects any field named like a credential, and
+that check is deliberate.
+
+Commands that need the environment load it explicitly:
+
+```bash
+node --env-file=.env scripts/run-experiment.mjs
+```
+
 ## Implemented features
 
 - Deterministic Babel AST parsing and admission filtering
