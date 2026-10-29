@@ -968,7 +968,7 @@
           ><span class="brand-sub">Implementación P</span>
         </div>
         <div class="top-actions">
-          <div class="status-badge">Local · mock only</div>
+          <div class="status-badge">Local · modelo opcional</div>
           <button id="view-toggle" class="view-toggle" type="button">
             Ver comparación B0/B1/B2/P
           </button>
@@ -1125,7 +1125,7 @@ Pega una función y procesa para inspeccionar el AST que produce Babel.</pre>
             </article>
             <div class="result-foot">
               <span>El paso 4 es la representación JS-SemDocIR (P).</span
-              ><span class="model-state">No hay un LLM configurado</span>
+              ><span class="model-state">Modelo real en la vista de comparación</span>
             </div>
           </section>
         </section>
@@ -1143,10 +1143,11 @@ Pega una función y procesa para inspeccionar el AST que produce Babel.</pre>
           >
         </div>
         <div class="compare-notice" role="note">
-          <strong>Vista experimental · mock</strong>
+          <strong>Vista experimental · salida mock</strong>
           <span
-            >La nomenclatura es B0/B1/B2/P (no hay B3). Son entradas alternativas para una
-            evaluación futura; no se llama a un modelo ni se genera documentación real.</span
+            >La nomenclatura es B0/B1/B2/P (no hay B3). Son entradas alternativas para la
+            evaluación. La línea «salida mock» es simulada; «Enviar al modelo» llama al proveedor
+            real solo para esa tarjeta y no guarda nada en la caché del experimento.</span
           >
         </div>
         <section class="comparison-grid" aria-label="Comparación de las cuatro representaciones">

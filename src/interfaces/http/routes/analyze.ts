@@ -117,7 +117,8 @@ export async function handleAnalyzeRoute(
     },
     documentation: {
       status: 'not_configured',
-      message: 'No hay un modelo de lenguaje configurado; no se genera documentación.',
+      message:
+        'Esta ruta solo construye la representación. El modelo se usa desde la vista de comparación («Enviar al modelo»).',
     },
   });
 }
