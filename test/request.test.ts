@@ -83,3 +83,47 @@ describe('F2.5 generation request and mock client', () => {
     assert.doesNotMatch(protocolText, /api[_-]?key|authorization|password|secret/i);
   });
 });
+
+describe('corpus freeze block (S0/S5)', () => {
+  const corpus = {
+    dataset: 'CodeXGLUE · Code-Text/code-to-text · JavaScript test',
+    sourceUrl: 'https://example.invalid/javascript.zip',
+    sourceCommit: 'b8590790716d3251a6950e860cd43fd82f5a35a6',
+    sourceSha256: 'a'.repeat(64),
+    downloadDate: '2026-11-04',
+    seed: 42,
+    parserVersion: '@babel/parser 8.0.7',
+    tokenizer: 'deepseek-v4.1-flash',
+  };
+
+  it('accepts a complete corpus block next to the safe draft', () => {
+    const protocol = validateProtocolConfig({ ...loadProtocolConfig(), corpus });
+    assert.deepEqual(protocol.corpus, corpus);
+  });
+
+  it('rejects a malformed date or a non-integer seed', () => {
+    assert.throws(
+      () =>
+        validateProtocolConfig({
+          ...loadProtocolConfig(),
+          corpus: { ...corpus, downloadDate: '04/11/2026' },
+        }),
+      /downloadDate/,
+    );
+    assert.throws(
+      () => validateProtocolConfig({ ...loadProtocolConfig(), corpus: { ...corpus, seed: 1.5 } }),
+      /seed/,
+    );
+  });
+
+  it('rejects a corpus block with empty fields or hidden credentials', () => {
+    assert.throws(
+      () => validateProtocolConfig({ ...loadProtocolConfig(), corpus: { ...corpus, dataset: '' } }),
+      /dataset/,
+    );
+    assert.throws(
+      () => validateProtocolConfig({ ...loadProtocolConfig(), corpus: { ...corpus, apiKey: 'x' } }),
+      /secret fields/,
+    );
+  });
+});

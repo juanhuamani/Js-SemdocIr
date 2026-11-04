@@ -14,10 +14,12 @@ export type { GenerationRequest } from './request.ts';
 export { DOCUMENTATION_PROMPT, loadProtocolConfig, validateProtocolConfig } from './protocol.ts';
 export {
   loadProtocolFileConfig,
+  validateCorpusConfig,
   validateFrozenProtocolConfig,
   validateProtocolFile,
 } from './protocol.ts';
 export type {
+  CorpusConfig,
   FrozenGenerationSettings,
   FrozenProtocolConfig,
   ProtocolConfig,

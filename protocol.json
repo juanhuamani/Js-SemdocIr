@@ -17,5 +17,15 @@
     "maxAttempts": 3,
     "initialDelayMs": 1000,
     "backoffMultiplier": 2
+  },
+  "corpus": {
+    "dataset": "microsoft/CodeXGLUE · Code-Text/code-to-text · JavaScript test",
+    "sourceUrl": "https://zenodo.org/api/records/7857872/files/javascript.zip/content",
+    "sourceCommit": "b8590790716d3251a6950e860cd43fd82f5a35a6",
+    "sourceSha256": "fdc743f5af27f90c77584a2d29e2b7f8cecdd00c37b433c385b888ee062936dd",
+    "downloadDate": "2026-11-04",
+    "seed": 42,
+    "parserVersion": "@babel/parser 8.0.7",
+    "tokenizer": "deepseek/deepseek-v4.1-flash (provisional; token lengths pending ratification)"
   }
 }

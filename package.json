@@ -16,6 +16,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "check:size": "node scripts/check-size.mjs",
+    "corpus": "node scripts/fetch-corpus.mjs && node scripts/prepare-corpus.mjs && node scripts/build-material.mjs && node scripts/characterize-corpus.mjs",
+    "corpus:sample": "node scripts/sample-rubric.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

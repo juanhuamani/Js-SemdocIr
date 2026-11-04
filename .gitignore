@@ -15,3 +15,8 @@ refsrc/
 .env
 .env.*
 !.env.example
+
+# Corpus experimental (D1): datos de terceros, nunca versionados
+corpus/*
+!corpus/SOURCE.md
+!corpus/MANIFIESTO.md

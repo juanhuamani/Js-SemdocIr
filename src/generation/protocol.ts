@@ -3,6 +3,8 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
+import { validateCorpusConfig, type CorpusConfig } from './corpus-config.ts';
+
 /** Exact shared instruction from especificacion_propuesta.md §7. */
 export const DOCUMENTATION_PROMPT =
   'You are given a JavaScript function represented in a structured textual format. Write a concise documentation comment (2 to 4 sentences) for the function: state what it does with its inputs, the main conditions it checks, the operations it performs, how it handles errors, and what it returns. Do not speculate about behavior that is not represented in the input. Output only the comment text.';
@@ -28,6 +30,7 @@ export interface ProtocolConfig {
     initialDelayMs: 1000;
     backoffMultiplier: 2;
   };
+  corpus?: CorpusConfig;
 }
 
 /** Provider reasoning levels accepted by the frozen run. */
@@ -69,7 +72,14 @@ export interface FrozenProtocolConfig {
   prompt: string;
   generation: FrozenGenerationSettings;
   retry: ProtocolConfig['retry'];
+  corpus?: CorpusConfig;
 }
+
+/**
+ * Corpus freeze (spec §9, §15). Kept in its own module.
+ */
+export type { CorpusConfig } from './corpus-config.ts';
+export { validateCorpusConfig } from './corpus-config.ts';
 
 /** Any protocol document the loader accepts. */
 export type ProtocolFileConfig = ProtocolConfig | FrozenProtocolConfig;
@@ -153,6 +163,7 @@ export function validateProtocolConfig(value: unknown): ProtocolConfig {
   ) {
     throw new TypeError('Protocol configuration does not match the safe F2.5 draft');
   }
+  if (config.corpus !== undefined) validateCorpusConfig(config.corpus);
 
   return config as ProtocolConfig;
 }
@@ -216,6 +227,7 @@ export function validateFrozenProtocolConfig(value: unknown): FrozenProtocolConf
   ) {
     throw new TypeError('Protocol configuration does not match a frozen run');
   }
+  if (config.corpus !== undefined) validateCorpusConfig(config.corpus);
 
   return config as FrozenProtocolConfig;
 }
