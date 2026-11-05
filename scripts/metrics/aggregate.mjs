@@ -36,7 +36,8 @@ async function readJsonLines(file) {
     .map((line) => JSON.parse(line));
 }
 
-const mean = (values) => (values.length === 0 ? 0 : values.reduce((a, b) => a + b, 0) / values.length);
+const mean = (values) =>
+  values.length === 0 ? 0 : values.reduce((a, b) => a + b, 0) / values.length;
 const median = (values) => {
   if (values.length === 0) return 0;
   const sorted = [...values].sort((a, b) => a - b);
@@ -65,15 +66,23 @@ async function main() {
   const rouge = new Map(rougeRows.map((row) => [key(row), row.f1]));
   const rows = outputs.filter((row) => row.status === 'succeeded');
 
-  const lines = ['condicion,n,bleu_medio,bertscore_f1_medio,rougeL_medio,tokens_entrada_medio,tokens_salida_medio,latencia_ms_mediana'];
+  const lines = [
+    'condicion,n,bleu_medio,bertscore_f1_medio,rougeL_medio,tokens_entrada_medio,tokens_salida_medio,latencia_ms_mediana',
+  ];
   const table = [];
 
   for (const representation of REPRESENTATIONS) {
     const group = rows.filter((row) => row.representation === representation);
     if (group.length === 0) continue;
-    const bleuValues = group.map((row) => bleu.get(key(row))).filter((value) => typeof value === 'number');
-    const bertValues = group.map((row) => bert.get(key(row))).filter((value) => typeof value === 'number');
-    const rougeValues = group.map((row) => rouge.get(key(row))).filter((value) => typeof value === 'number');
+    const bleuValues = group
+      .map((row) => bleu.get(key(row)))
+      .filter((value) => typeof value === 'number');
+    const bertValues = group
+      .map((row) => bert.get(key(row)))
+      .filter((value) => typeof value === 'number');
+    const rougeValues = group
+      .map((row) => rouge.get(key(row)))
+      .filter((value) => typeof value === 'number');
     const entry = {
       representation,
       n: group.length,
@@ -102,7 +111,9 @@ async function main() {
   await mkdir(path.dirname(path.resolve(options.out)), { recursive: true });
   await writeFile(path.resolve(options.out), `${lines.join('\n')}\n`, 'utf8');
 
-  console.log('| Condición | n | BLEU-4 | BERTScore F1 | ROUGE-L | Tokens entrada | Tokens salida | Latencia p50 |');
+  console.log(
+    '| Condición | n | BLEU-4 | BERTScore F1 | ROUGE-L | Tokens entrada | Tokens salida | Latencia p50 |',
+  );
   console.log('|---|---:|---:|---:|---:|---:|---:|---:|');
   for (const row of table) {
     console.log(

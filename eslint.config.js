@@ -10,7 +10,7 @@ import eslintConfigPrettier from 'eslint-config-prettier';
 
 export default tseslint.config(
   {
-    ignores: ['node_modules/**', 'dist/**'],
+    ignores: ['node_modules/**', 'dist/**', '.venv-metrics/**', 'experimento/**', 'corpus/**'],
   },
   js.configs.recommended,
   tseslint.configs.recommended,
