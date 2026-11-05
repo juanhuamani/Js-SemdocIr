@@ -4,6 +4,7 @@ npm-debug.log*
 .DS_Store
 .serena/
 .cache/
+experimento/
 
 #Rosetta
 agents/

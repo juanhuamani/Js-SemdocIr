@@ -13,6 +13,7 @@
     "test:integration": "node --test test/integration/phase2.test.ts",
     "demo": "node src/interfaces/cli.ts",
     "app": "node --env-file-if-exists=.env src/interfaces/http/server.ts",
+    "experiment": "node --env-file-if-exists=.env scripts/run-experiment.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "check:size": "node scripts/check-size.mjs",
