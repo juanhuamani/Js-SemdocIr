@@ -1,7 +1,7 @@
 {
   "protocolVersion": "1.0-draft",
   "status": "pending-advisor-and-model-approval",
-  "prompt": "You are given a JavaScript function represented in a structured textual format. Write a concise documentation comment (2 to 4 sentences) for the function: state what it does with its inputs, the main conditions it checks, the operations it performs, how it handles errors, and what it returns. Do not speculate about behavior that is not represented in the input. Output only the comment text.",
+  "prompt": "You are given a JavaScript function represented in a structured textual format. Write a single concise documentation sentence, at most 25 words, that states what the function does, the main conditions it checks, and what it returns. Do not speculate about behavior that is not represented in the input. Output only the sentence.",
   "generation": {
     "clientMode": "mock",
     "allowRealApi": false,

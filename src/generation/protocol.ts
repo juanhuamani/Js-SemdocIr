@@ -5,9 +5,9 @@ import { fileURLToPath } from 'node:url';
 
 import { validateCorpusConfig, type CorpusConfig } from './corpus-config.ts';
 
-/** Exact shared instruction from especificacion_propuesta.md §7. */
+/** Exact shared instruction from especificacion_propuesta.md §7 (enmienda E-3). */
 export const DOCUMENTATION_PROMPT =
-  'You are given a JavaScript function represented in a structured textual format. Write a concise documentation comment (2 to 4 sentences) for the function: state what it does with its inputs, the main conditions it checks, the operations it performs, how it handles errors, and what it returns. Do not speculate about behavior that is not represented in the input. Output only the comment text.';
+  'You are given a JavaScript function represented in a structured textual format. Write a single concise documentation sentence, at most 25 words, that states what the function does, the main conditions it checks, and what it returns. Do not speculate about behavior that is not represented in the input. Output only the sentence.';
 
 /** Draft decoding/client settings. Real API settings remain deliberately unset. */
 export interface ProtocolConfig {

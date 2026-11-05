@@ -21,3 +21,4 @@ refsrc/
 corpus/*
 !corpus/SOURCE.md
 !corpus/MANIFIESTO.md
+.venv-metrics/
