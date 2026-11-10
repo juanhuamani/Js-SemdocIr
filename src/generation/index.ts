@@ -1,4 +1,4 @@
-﻿export {
+export {
   createRepresentationJobs,
   runRepresentationJob,
   type RepresentationJob,
@@ -30,5 +30,6 @@ export {
   buildChatCompletionBody,
   composeUserMessage,
 } from './provider-client.ts';
-export { loadProviderConfig } from './provider-config.ts';
+export { loadProviderConfig, loadResponsesConfig } from './provider-config.ts';
+export { ResponsesGenerationClient } from './responses-client.ts';
 export type { ProviderConfig } from './provider-config.ts';

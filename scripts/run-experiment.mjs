@@ -6,7 +6,7 @@
  * Full:    npm run experiment
  * Dry run: npm run experiment -- --dry-run
  */
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { createReadStream } from 'node:fs';
 import { createInterface } from 'node:readline';
 import path from 'node:path';
@@ -14,7 +14,8 @@ import path from 'node:path';
 import { GenerationService } from '../src/generation/generation-service.ts';
 import { FileGenerationCache } from '../src/generation/cache.ts';
 import { ProviderGenerationClient } from '../src/generation/provider-client.ts';
-import { loadProviderConfig } from '../src/generation/provider-config.ts';
+import { ResponsesGenerationClient } from '../src/generation/responses-client.ts';
+import { loadProviderConfig, loadResponsesConfig } from '../src/generation/provider-config.ts';
 
 const REPRESENTATIONS = ['b0', 'b1', 'b2', 'p'];
 const PROMPT_PATH = path.resolve('protocol.json');
@@ -27,7 +28,9 @@ function parseArgs(argv) {
     concurrency: 4,
     out: null,
     version: process.env.COMMANDCODE_MODEL_VERSION ?? 'unfrozen',
+    provider: 'commandcode',
     dryRun: false,
+    retryFailed: false,
   };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
@@ -35,6 +38,8 @@ function parseArgs(argv) {
     else if (arg === '--concurrency') options.concurrency = Number(argv[(i += 1)]);
     else if (arg === '--out') options.out = argv[(i += 1)];
     else if (arg === '--version') options.version = argv[(i += 1)];
+    else if (arg === '--provider') options.provider = argv[(i += 1)];
+    else if (arg === '--retry-failed') options.retryFailed = true;
     else if (arg === '--dry-run') options.dryRun = true;
     else throw new Error(`Argumento desconocido: ${arg}`);
   }
@@ -60,11 +65,11 @@ function selectEvenly(records, limit) {
   return selected;
 }
 
-function buildRequest(record, representation, input, protocol, config, version) {
+function buildRequest(record, representation, input, protocol, config, version, provider) {
   return {
     protocolVersion: '1.0-experiment',
     clientMode: 'provider',
-    provider: 'commandcode',
+    provider,
     model: config.model,
     modelVersion: version,
     functionId: record.id,
@@ -81,7 +86,7 @@ function buildRequest(record, representation, input, protocol, config, version) 
   };
 }
 
-function summarize(results, startedAt) {
+function summarize(results, startedAt, prices) {
   const total = results.length;
   const ok = results.filter((r) => r.status === 'succeeded');
   const empty = ok.filter((r) => r.output.trim().length === 0);
@@ -95,7 +100,7 @@ function summarize(results, startedAt) {
   const outputTokens = ok.reduce((sum, r) => sum + r.outputTokens, 0);
   const latencies = ok.map((r) => r.latencyMs).sort((a, b) => a - b);
   const p50 = latencies.length === 0 ? 0 : latencies[Math.floor(latencies.length / 2)];
-  const cost = (inputTokens * 0.15 + outputTokens * 0.6) / 1_000_000;
+  const cost = (inputTokens * prices.input + outputTokens * prices.output) / 1_000_000;
   const minutes = ((Date.now() - startedAt) / 60000).toFixed(1);
 
   return [
@@ -108,6 +113,30 @@ function summarize(results, startedAt) {
     `costo estimado: ${cost.toFixed(4)} USD`,
     `salida: ${results.path ?? 'definida por --out'}`,
   ].join('\n');
+}
+
+async function clearFailedCache(directory) {
+  let entries;
+  try {
+    entries = await readdir(directory);
+  } catch {
+    return 0;
+  }
+  let removed = 0;
+  for (const name of entries) {
+    if (!name.endsWith('.json')) continue;
+    const file = path.join(directory, name);
+    try {
+      const record = JSON.parse(await readFile(file, 'utf8'));
+      if (record.status === 'failed') {
+        await rm(file);
+        removed += 1;
+      }
+    } catch {
+      // Un registro ilegible se deja intacto para no borrar evidencia.
+    }
+  }
+  return removed;
 }
 
 async function main() {
@@ -125,10 +154,19 @@ async function main() {
     return;
   }
 
-  const config = loadProviderConfig();
-  const service = new GenerationService(new ProviderGenerationClient(config), {
+  const useResponses = options.provider === 'responses';
+  const config = useResponses ? loadResponsesConfig() : loadProviderConfig();
+  const client = useResponses
+    ? new ResponsesGenerationClient(config)
+    : new ProviderGenerationClient(config);
+  const service = new GenerationService(client, {
     cache: new FileGenerationCache(path.resolve('experimento/cache')),
   });
+
+  if (options.retryFailed) {
+    const removed = await clearFailedCache(path.resolve('experimento/cache'));
+    console.log('registros fallidos eliminados de la cache: ' + removed);
+  }
 
   const startedAt = Date.now();
   const results = new Array(tasks.length);
@@ -159,7 +197,15 @@ async function main() {
       }
 
       const result = await service.run(
-        buildRequest(record, representation, input, protocol, config, options.version),
+        buildRequest(
+          record,
+          representation,
+          input,
+          protocol,
+          config,
+          options.version,
+          options.provider,
+        ),
       );
       results[index] =
         result.status === 'succeeded'
@@ -205,7 +251,8 @@ async function main() {
     'utf8',
   );
   results.path = options.out;
-  console.log(summarize(results, startedAt));
+  const prices = useResponses ? { input: 2, output: 8 } : { input: 0.15, output: 0.6 };
+  console.log(summarize(results, startedAt, prices));
 }
 
 await main();

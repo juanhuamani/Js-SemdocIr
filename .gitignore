@@ -22,3 +22,7 @@ corpus/*
 !corpus/SOURCE.md
 !corpus/MANIFIESTO.md
 .venv-metrics/
+
+# Bytecode de Python: se regenera, no se versiona
+__pycache__/
+*.pyc

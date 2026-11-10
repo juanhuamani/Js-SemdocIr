@@ -10,6 +10,15 @@ export interface ProviderConfig {
   timeoutMs: number;
 }
 
+interface ProviderDefaults {
+  /** Prefix of the environment variables, without the trailing underscore. */
+  prefix: string;
+  /** Used when `<PREFIX>_BASE_URL` is not set. */
+  defaultBaseUrl?: string;
+  /** Used when `<PREFIX>_MODEL` is not set. */
+  defaultModel?: string;
+}
+
 const DEFAULT_TIMEOUT_MS = 60_000;
 
 /**
@@ -28,34 +37,39 @@ function isHttpUrl(value: string): boolean {
 }
 
 /**
- * Reads provider settings from the process environment.
+ * Reads provider settings from the environment under a variable prefix.
  *
  * Error messages name the variable but never echo its value, so a mistyped key
  * cannot leak into a log.
  *
- * @param env - Environment to read; defaults to `process.env`.
+ * @param env - Environment to read.
+ * @param defaults - Variable prefix and optional fallbacks.
  * @returns Validated connection settings.
  * @throws {TypeError} If a required variable is missing or malformed.
  */
-export function loadProviderConfig(env: NodeJS.ProcessEnv = process.env): ProviderConfig {
-  const apiKey = (env.COMMANDCODE_API_KEY ?? '').trim();
-  const baseUrl = (env.COMMANDCODE_BASE_URL ?? '').trim();
-  const model = (env.COMMANDCODE_MODEL ?? '').trim();
-  const timeoutRaw = (env.COMMANDCODE_TIMEOUT_MS ?? '').trim();
+function loadConfig(env: NodeJS.ProcessEnv, defaults: ProviderDefaults): ProviderConfig {
+  const { prefix } = defaults;
+  const apiKey = (env[`${prefix}_API_KEY`] ?? '').trim();
+  const baseUrl = (
+    (env[`${prefix}_BASE_URL`] ?? '').trim() ||
+    (defaults.defaultBaseUrl ?? '')
+  ).trim();
+  const model = ((env[`${prefix}_MODEL`] ?? '').trim() || (defaults.defaultModel ?? '')).trim();
+  const timeoutRaw = (env[`${prefix}_TIMEOUT_MS`] ?? '').trim();
 
   if (apiKey.length === 0) {
-    throw new TypeError('COMMANDCODE_API_KEY is not set');
+    throw new TypeError(`${prefix}_API_KEY is not set`);
   }
   if (baseUrl.length === 0) {
-    throw new TypeError('COMMANDCODE_BASE_URL is not set');
+    throw new TypeError(`${prefix}_BASE_URL is not set`);
   }
   if (!isHttpUrl(baseUrl)) {
-    throw new TypeError('COMMANDCODE_BASE_URL must be an absolute http(s) URL');
+    throw new TypeError(`${prefix}_BASE_URL must be an absolute http(s) URL`);
   }
 
   const timeoutMs = timeoutRaw.length === 0 ? DEFAULT_TIMEOUT_MS : Number(timeoutRaw);
   if (!Number.isInteger(timeoutMs) || timeoutMs <= 0) {
-    throw new TypeError('COMMANDCODE_TIMEOUT_MS must be a positive integer');
+    throw new TypeError(`${prefix}_TIMEOUT_MS must be a positive integer`);
   }
 
   return {
@@ -64,4 +78,33 @@ export function loadProviderConfig(env: NodeJS.ProcessEnv = process.env): Provid
     model: model.length === 0 ? null : model,
     timeoutMs,
   };
+}
+
+/**
+ * Reads the CommandCode (Chat Completions) settings from the environment.
+ *
+ * @param env - Environment to read; defaults to `process.env`.
+ * @returns Validated connection settings.
+ * @throws {TypeError} If a required variable is missing or malformed.
+ */
+export function loadProviderConfig(env: NodeJS.ProcessEnv = process.env): ProviderConfig {
+  return loadConfig(env, { prefix: 'COMMANDCODE' });
+}
+
+/**
+ * Reads the OpenAI Responses settings from the environment.
+ *
+ * Defaults to the public OpenAI endpoint and `gpt-5.3-codex`, the only model
+ * that served the experiment with reasoning disabled.
+ *
+ * @param env - Environment to read; defaults to `process.env`.
+ * @returns Validated connection settings.
+ * @throws {TypeError} If a required variable is missing or malformed.
+ */
+export function loadResponsesConfig(env: NodeJS.ProcessEnv = process.env): ProviderConfig {
+  return loadConfig(env, {
+    prefix: 'OPENAI',
+    defaultBaseUrl: 'https://api.openai.com/v1',
+    defaultModel: 'gpt-5.3-codex',
+  });
 }
