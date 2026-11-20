@@ -1,77 +1,166 @@
 ﻿# JS-SemDocIR
 
-Deterministic JavaScript AST extraction and representation pipeline for
-functional documentation. The repository includes the Phase 1 extractor and a
-local Phase 2 implementation scaffold:
+**Documentación funcional determinista de funciones JavaScript.**
 
-```text
-JavaScript source → parsed AST → admission filter → extractor → JS-SemDocIR (P)
-```
+JS-SemDocIR es el artefacto de una tesis académica. Convierte una función
+JavaScript en una representación estructurada de lo que hace —entradas,
+condiciones, operaciones, manejo de errores y retornos— sin usar modelos de
+lenguaje. El repositorio incluye además el instrumental del experimento: las
+representaciones de comparación B0/B1/B2, un cliente de generación y los
+resultados almacenados de la corrida completa con `gpt-5.3-codex`.
+
+## Estado actual
+
+| Componente                              | Estado                                               |
+| --------------------------------------- | ---------------------------------------------------- |
+| Parser, filtro de admisión y extracción | Completo                                             |
+| Serializadores B1/SBT y B2/NIT          | Completo, con fixtures dorados                       |
+| Interfaz web local                      | Completa: análisis, comparación y casos reales       |
+| Corrida experimental                    | 2 056 funciones × 4 representaciones = 8 224 salidas |
+| Métricas                                | BLEU-4, ROUGE-L y BERTScore para las 8 224 salidas   |
+| Pruebas                                 | 169 pruebas en 32 suites                             |
+
+El análisis, la vista de casos reales y los datos versionados funcionan sin
+conexión. Solo la vista de comparación y `npm run experiment` pueden llamar a
+un proveedor externo, y únicamente si existe un archivo `.env` configurado.
 
 ## Pipeline
 
-![JS-SemDocIR pipeline](images/pipeline.png)
+![Pipeline de JS-SemDocIR](images/pipeline.png)
 
-Phase 1 provides the deterministic parser, admission filter, extractor and
-assembler. The local web app demonstrates that system path and displays only P.
-B0 (source), B1 (SBT), and B2 (NIT) are comparison inputs implemented for the
-future evaluation protocol; they are not sequential processing steps or outputs
-of the user-facing system. The separate Phase 2 orchestration scaffold remains
-mock-only; no real model provider is configured.
+```text
+Fuente JavaScript → parser Babel → filtro de admisión → extractor → ensamblador → P
+```
 
-## Requirements
+La salida del sistema es **P** (JS-SemDocIR), una representación canónica y
+determinista. **B0** (código fuente), **B1** (SBT) y **B2** (NIT) no son pasos
+del sistema: son las entradas de comparación del protocolo experimental.
 
-- Node.js 24 or newer
+## Requisitos e instalación
+
+- Node.js 24 o superior
 - npm
 
-The parser version is intentionally frozen at `@babel/parser@8.0.7`.
-
-## Install
-
 ```bash
+git clone https://github.com/juanhuamani/Js-SemdocIr
+cd Js-SemdocIr
 npm install
 ```
 
-## Development commands
+El parser está congelado en `@babel/parser@8.0.7` para preservar la
+reproducibilidad de las representaciones.
 
-```bash
-npm test
-npm run test:integration
-npm run typecheck
-npm run lint
-npm run format:check
-npm run check:size
-```
-
-## Usage
-
-### Interfaz web local
+## Inicio rápido
 
 ```bash
 npm run app
 ```
 
-Abre [http://127.0.0.1:4173](http://127.0.0.1:4173), pega la función y pulsa
-**Procesar función**. La pantalla muestra el flujo implementado y la salida P;
-**Cargar ejemplo** inserta `parseList`. B0/B1/B2 no se muestran porque son
-controles de comparación del protocolo experimental. El servidor solo escucha
-en el equipo local. Para detenerlo, pulsa `Ctrl+C` en la terminal.
+Abre [http://127.0.0.1:4173](http://127.0.0.1:4173). El servidor escucha solo
+en el equipo local y se detiene con `Ctrl+C`.
 
-El botón **Ver comparación B0/B1/B2/P** abre las cuatro representaciones del
-mismo análisis. Cada tarjeta tiene **Enviar al modelo**: manda esa representación
-al proveedor configurado en `.env` y muestra la respuesta junto con el modelo,
-los tokens y la latencia. Es una vista de prueba: no escribe en la caché del
-experimento ni cuenta como evidencia. Sin `.env` completa, la ruta responde 503
-con la variable que falta.
+## Interfaz web
 
-El botón **Ver casos reales (replay)** abre ocho casos curados de la corrida
-completa de `gpt-5.3-codex` (2 056 funciones, 8 224 llamadas). Muestra la
-entrada exacta, los parámetros congelados, la salida guardada, la referencia del
-dataset y las métricas; todo se lee de archivos locales y no hace llamadas al
-modelo. Los datos mínimos de esa vista están versionados, así que un clon limpio
-solo necesita `npm install` y `npm run app`.
+### Análisis de una función
 
-También está disponible el modo terminal con `npm run demo`.
+Pega una función JavaScript y pulsa **Procesar función**. La vista muestra el
+recorrido completo del pipeline y la representación P resultante. **Cargar
+ejemplo** inserta la función `parseList` del corpus de referencia.
+
+### Comparación B0/B1/B2/P
+
+Genera las cuatro representaciones de una misma función. Cada tarjeta permite
+enviar esa representación al proveedor configurado en `.env` y muestra la
+respuesta, el modelo, los tokens y la latencia. Es una vista de prueba: no
+escribe en la caché del experimento ni cuenta como evidencia. Sin `.env`
+completa, la ruta responde `503` con la variable faltante.
+
+### Casos reales (replay)
+
+Ocho casos curados de la corrida completa: cuatro aciertos, dos casos difíciles
+y dos desaciertos. Para cada uno se muestran:
+
+- la entrada exacta en B0, B1, B2 y P;
+- los parámetros congelados de la generación;
+- la salida guardada y la referencia del dataset;
+- BLEU-4, ROUGE-L, BERTScore, latencia y tokens;
+- la traza de los pasos intermedios del pipeline.
+
+La vista lee únicamente archivos locales y **no hace ninguna llamada al
+modelo**. Los datos mínimos están versionados, por lo que un clon limpio puede
+abrirla con `npm install && npm run app`.
+
+## Protocolo experimental
+
+| Elemento         | Valor                                                             |
+| ---------------- | ----------------------------------------------------------------- |
+| Dataset          | CodeXGLUE code-to-text, JavaScript test (3 291 → 2 056 admitidas) |
+| Representaciones | B0, B1/SBT, B2/NIT y P                                            |
+| Modelo           | `gpt-5.3-codex` mediante la OpenAI Responses API                  |
+| Decodificación   | temperatura 0, `max_output_tokens` 128, `reasoning.effort = none` |
+| Semilla          | No se envía; el endpoint la rechaza                               |
+| Corrida          | 8 224 llamadas, sin fallos de ejecución                           |
+| Métricas         | BLEU-4 suavizado, ROUGE-L F1 y BERTScore F1                       |
+
+El prompt y el bloque del corpus viven en `protocol.json`; los parámetros de la
+corrida Codex se aplican en el cliente Responses. La consigna pide una sola
+frase de 25 palabras como máximo. El detalle de las decisiones metodológicas
+está en `docs/10-protocolo/` del repositorio de la tesis.
+
+## Reproducción
+
+### Corpus y representaciones
+
+```bash
+npm run corpus
+```
+
+Descarga la partición de CodeXGLUE, aplica el filtro de admisión, genera las
+representaciones B0/B1/B2/P y verifica los digests del corpus congelado.
+Requiere conexión a Internet. Los artefactos quedan en `corpus/`.
+
+### Generación
+
+La corrida completa requiere una clave de OpenAI y presupuesto para 8 224
+llamadas:
+
+```bash
+cp .env.example .env
+npm run experiment -- --provider responses --out experimento/salidas-codex-repeticion.jsonl
+```
+
+El comando reutiliza la caché local cuando la clave de petición coincide. No se
+ejecuta en las pruebas ni en integración continua.
+
+### Métricas
+
+Los scripts de `scripts/metrics/` recalculan las métricas contra el docstring
+del corpus:
+
+```bash
+python scripts/metrics/bleu.py --experiment experimento/salidas-codex.jsonl --out experimento/metricas-repeticion/bleu.jsonl
+python scripts/metrics/rouge.py --experiment experimento/salidas-codex.jsonl --out experimento/metricas-repeticion/rouge.jsonl
+python scripts/metrics/bertscore.py --experiment experimento/salidas-codex.jsonl --out experimento/metricas-repeticion/bertscore.jsonl
+```
+
+Requieren un entorno Python con `sacrebleu`, `rouge-score` y `bert-score`
+(este último descarga un modelo de lenguaje y puede usar GPU).
+
+## Datos versionados
+
+Para que la vista de casos reales sea reproducible sin claves, el repositorio
+incluye un paquete mínimo:
+
+- `corpus/admitido.jsonl`: las 2 056 funciones admitidas con su docstring.
+- `experimento/salidas-codex.jsonl`: las 8 224 salidas de la corrida completa.
+- `experimento/metricas-codex-full/`: BLEU, ROUGE y BERTScore de esas salidas.
+- `corpus/repr/{b0,b1,b2,p}/`: las 32 representaciones de los ocho casos curados.
+
+El resto de artefactos —corpus crudo, AST, caché, otros pilotos y métricas
+auxiliares— está ignorado por Git. Se regenera con los comandos anteriores o se
+conserva como evidencia local del experimento.
+
+## Uso programático
 
 ```ts
 import { parseFunction } from './src/core/ast/index.ts';
@@ -88,110 +177,80 @@ const instance = assemble(extractFunction(source, parseFunction(source)));
 console.log(instance);
 ```
 
-## Phase 2 local mock pipeline
+El modo terminal está disponible con:
 
-See [`docs/design.md`](docs/design.md) for the module map and
-[`docs/status.md`](docs/status.md) for what is implemented. A job can be run
-without an external service:
-
-```ts
-import {
-  GenerationService,
-  MockGenerationClient,
-  createRepresentationJobs,
-  runRepresentationJob,
-} from './src/generation/index.ts';
-import { buildRepresentationBundle } from './src/representations/index.ts';
-
-const bundle = buildRepresentationBundle('function identity(value) { return value; }', {
-  sourceId: 'example:identity',
-});
-const jobs = createRepresentationJobs(bundle);
-const service = new GenerationService(new MockGenerationClient());
-
-// Each call runs exactly one function × representation job.
-const result = await runRepresentationJob(jobs[0]!, service);
-if (result.status === 'succeeded') {
-  console.log(result.status, result.representation, result.response.output);
-} else {
-  console.error(result.status, result.representation, result.error.message);
-}
+```bash
+npm run demo
 ```
 
-The mock marker is not generated documentation. `protocol.json` intentionally
-keeps provider/model unset and `allowRealApi` false pending approval.
+## Estructura del proyecto
 
-## Environment and secrets
+```text
+src/core/ast/                  Parser Babel, recorrido, admisión y análisis compartido
+src/core/semdocir/             Extracción de P y ensamblado canónico
+src/representations/           Artefactos B0/B1/B2/P y serializadores SBT/NIT
+src/generation/                Protocolo, clientes, caché, reintentos y orquestación
+src/interfaces/http/           Servidor local, rutas y carga de casos reales
+src/interfaces/cli.ts          Demostración por terminal
+ui/index.html                  Interfaz web de una sola página
+scripts/                       Corpus, experimento y métricas
+corpus/                        Corpus admitido y representaciones (parcial)
+experimento/                   Salidas y métricas de la corrida (parcial)
+test/                          Pruebas unitarias y de integración
+docs/                          Contexto, arquitectura y estado del proyecto
+images/                        Diagramas
+```
 
-Copy the template and fill it locally:
+Cada módulo se consume a través de su `index.ts`. El análisis sintáctico se
+hace una sola vez y es la única ruta que construye P; el comparador reutiliza
+ese mismo AST y esa misma P para serializar B1 y B2.
+
+## Desarrollo y pruebas
+
+```bash
+npm test
+npm run test:integration
+npm run typecheck
+npm run lint
+npm run format:check
+npm run check:size
+```
+
+`npm test` ejecuta la suite completa con el runner nativo de Node. El proyecto
+limita cada archivo TypeScript a 300 líneas mediante `npm run check:size`.
+
+## Configuración
+
+Copia la plantilla y completa solo las claves que vayas a usar:
 
 ```bash
 cp .env.example .env
 ```
 
-| Variable                 | Purpose                                                                     |
-| ------------------------ | --------------------------------------------------------------------------- |
-| `COMMANDCODE_API_KEY`    | Provider key. Required only for real calls.                                 |
-| `COMMANDCODE_BASE_URL`   | OpenAI-compatible endpoint, copied from the provider panel (include `/v1`). |
-| `COMMANDCODE_TIMEOUT_MS` | Per-call timeout in milliseconds. Defaults to 60000.                        |
+| Variable                 | Uso                                                          |
+| ------------------------ | ------------------------------------------------------------ |
+| `COMMANDCODE_API_KEY`    | Proveedor CommandCode (Chat Completions).                    |
+| `COMMANDCODE_BASE_URL`   | Endpoint compatible con OpenAI, incluida la ruta `/v1`.      |
+| `COMMANDCODE_TIMEOUT_MS` | Tiempo máximo por llamada; por defecto 60 000 ms.            |
+| `OPENAI_API_KEY`         | OpenAI Responses API, usada por los modelos Codex.           |
+| `OPENAI_BASE_URL`        | Endpoint de OpenAI; por defecto `https://api.openai.com/v1`. |
+| `OPENAI_MODEL`           | Modelo de reserva; por defecto `gpt-5.3-codex`.              |
 
-`.env` is ignored by git and must never be committed. No secret belongs in
-`protocol.json`: the validator rejects any field named like a credential, and
-that check is deliberate.
+`.env` está ignorado por Git y nunca debe versionarse. `protocol.json` no
+contiene credenciales: el validador rechaza cualquier campo con nombre de
+secreto.
 
-Commands that need the environment load it explicitly:
+## Alcance y limitaciones
 
-```bash
-node --env-file=.env scripts/run-experiment.mjs
-```
+- El análisis cubre una función de forma aislada; no resuelve enlaces entre
+  módulos ni la semántica externa de las llamadas.
+- La vista de comparación es una sonda interactiva, no evidencia experimental.
+- El repositorio contiene resultados descriptivos y sus métricas, pero no
+  pruebas de hipótesis ni la rúbrica de evaluación humana.
+- El proyecto es académico, no publicado y no tiene licencia.
 
-## Implemented features
+## Documentación
 
-- Deterministic Babel AST parsing and admission filtering
-- Function-frontier traversal for nested functions
-- Conditions, loops, returns, throws, `try/catch/finally`, calls and `await`
-- Source-preserving expressions with normalized whitespace and removed comments
-- Canonical category ordering and bilateral absence markers
-- Non-determinable (`ND`) records for supported local cases
-- Expression expansion (I-F2.7-01): pure top-level assignments are substituted
-  recursively in `RET`, `CALL`, and `COND` records, so P carries the full data
-  flow of the function
-- Exact unit tests for canonical examples and extraction edge cases
-- Deterministic SBT and NIT serializers with golden fixtures
-- Shared B0/B1/B2/P identity and artifact metadata
-- Versioned mock-only request protocol, local file cache, bounded retries, and resumable records
-- One-function × one-representation orchestration with an end-to-end mock integration test
-
-## Scope and limitations
-
-No real API client, credentials, model selection, corpus run, metric calculation,
-human rubric, hypothesis testing, or experimental result is included. Generated
-cache records are local, ignored by Git, and are not thesis evidence.
-
-## Project structure
-
-```text
-src/core/ast/                    Parser, AST walk, admission, shared analysis
-src/core/semdocir/               P extraction and canonical assembly
-src/representations/             B0/B1/B2/P comparison artifacts
-  serializers/                   SBT and NIT encoders
-src/generation/                  Jobs, protocol, mock client, cache
-src/interfaces/http/routes/      Analysis and comparison HTTP routes
-src/interfaces/http/server.ts    Local web server and route dispatch
-src/interfaces/cli.ts            Terminal demo
-docs/design.md             Module map, contracts and design rules
-docs/status.md                   Implemented state and open gates
-protocol.json                    Non-secret, mock-only draft protocol
-test/                            Unit and mock integration tests
-```
-
-Each module is consumed through its `index.ts`; there are no compatibility
-re-export layers. The core analysis parses once and is the only path that
-builds P. The experimental comparator reuses that exact P and AST for B1/B2
-serialization; the user-facing `/api/analyze` route remains separate from
-`/api/compare`.
-
-## License
-
-This project is part of an academic thesis and is currently unpublished and
-unlicensed.
+- [`docs/design.md`](docs/design.md): mapa de módulos, contratos y reglas de diseño.
+- [`corpus/SOURCE.md`](corpus/SOURCE.md): procedencia y licencia del corpus.
+- [`corpus/MANIFIESTO.md`](corpus/MANIFIESTO.md): artefactos, digests y parámetros congelados.
