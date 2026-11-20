@@ -64,6 +64,13 @@ los tokens y la latencia. Es una vista de prueba: no escribe en la caché del
 experimento ni cuenta como evidencia. Sin `.env` completa, la ruta responde 503
 con la variable que falta.
 
+El botón **Ver casos reales (replay)** abre ocho casos curados de la corrida
+completa de `gpt-5.3-codex` (2 056 funciones, 8 224 llamadas). Muestra la
+entrada exacta, los parámetros congelados, la salida guardada, la referencia del
+dataset y las métricas; todo se lee de archivos locales y no hace llamadas al
+modelo. Los datos mínimos de esa vista están versionados, así que un clon limpio
+solo necesita `npm install` y `npm run app`.
+
 También está disponible el modo terminal con `npm run demo`.
 
 ```ts
