@@ -809,6 +809,516 @@
         font-weight: 650;
         white-space: nowrap;
       }
+      /* --- Casos reales (replay de resultados precalculados) --- */
+      .cases-main {
+        grid-template-rows: 57px auto minmax(0, 1fr);
+      }
+      .cases-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+      .demo-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 10px;
+        border: 1px solid #e7ddbf;
+        border-radius: 5px;
+        background: var(--amber-pale);
+        color: var(--amber);
+        font: 650 9px var(--mono);
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      .demo-badge::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #c18b22;
+      }
+      .cases-notice {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 12px;
+        border: 1px solid #e7ddbf;
+        border-radius: 7px;
+        background: var(--amber-pale);
+        color: #6f4e13;
+        font-size: 10px;
+        line-height: 1.45;
+      }
+      .cases-notice strong {
+        flex: 0 0 auto;
+        font: 700 9px var(--mono);
+        text-transform: uppercase;
+      }
+      .cases-layout {
+        min-height: 0;
+        display: grid;
+        grid-template-columns: minmax(250px, 27%) minmax(0, 1fr);
+        gap: 12px;
+      }
+      .case-list-panel {
+        min-width: 0;
+        display: grid;
+        grid-template-rows: 44px minmax(0, 1fr) auto;
+      }
+      .case-list {
+        min-height: 0;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 7px;
+        scrollbar-width: thin;
+      }
+      .case-item {
+        min-width: 0;
+        width: 100%;
+        display: grid;
+        gap: 4px;
+        padding: 9px 10px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: var(--surface);
+        color: var(--ink);
+        text-align: left;
+        cursor: pointer;
+      }
+      .case-item:hover {
+        border-color: #b7c9bc;
+        background: var(--soft);
+      }
+      .case-item[aria-pressed='true'] {
+        border-color: var(--green);
+        background: var(--green-pale);
+      }
+      .case-item-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .case-item-id {
+        color: var(--green-dark);
+        font: 700 10px var(--mono);
+      }
+      .case-item-fn {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      .case-item-repo {
+        overflow: hidden;
+        color: var(--muted);
+        font-size: 9px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .case-tag {
+        flex: 0 0 auto;
+        padding: 3px 6px;
+        border-radius: 99px;
+        font: 700 8px var(--mono);
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+      }
+      .case-tag[data-category='acierto'] {
+        background: var(--green-pale);
+        color: var(--green-dark);
+      }
+      .case-tag[data-category='dificil'] {
+        background: var(--amber-pale);
+        color: var(--amber);
+      }
+      .case-tag[data-category='desacierto'] {
+        background: var(--red-pale);
+        color: var(--red);
+      }
+      .case-legend {
+        padding: 9px 11px;
+        border-top: 1px solid var(--line);
+        background: var(--soft);
+        color: var(--muted);
+        font-size: 9px;
+        line-height: 1.5;
+      }
+      .case-detail {
+        min-width: 0;
+        min-height: 0;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding-right: 2px;
+        scrollbar-width: thin;
+      }
+      .case-detail > .panel {
+        flex: 0 0 auto;
+      }
+      .case-hero {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 13px 14px 12px;
+        border-bottom: 1px solid var(--line);
+      }
+      .case-kicker {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 3px;
+      }
+      .case-id-lg {
+        color: var(--green-dark);
+        font: 700 11px var(--mono);
+      }
+      .case-title {
+        margin: 0;
+        font-size: 16px;
+        letter-spacing: -0.03em;
+      }
+      .case-meta {
+        margin: 3px 0 0;
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .case-meta a {
+        color: var(--green-dark);
+        text-decoration: none;
+      }
+      .case-meta a:hover {
+        text-decoration: underline;
+      }
+      .case-note {
+        max-width: 660px;
+        margin: 7px 0 0;
+        font-size: 10px;
+        line-height: 1.45;
+      }
+      .case-run {
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+      }
+      .case-run-status {
+        color: var(--muted);
+        font: 600 8px var(--mono);
+        text-align: right;
+      }
+      .case-run-status.running {
+        color: var(--amber);
+      }
+      .case-run-status.done {
+        color: var(--green-dark);
+      }
+      .case-pipeline {
+        min-height: 56px;
+        margin: 10px 12px;
+      }
+      .case-pipeline .pipeline-number {
+        width: 22px;
+        height: 22px;
+        flex-basis: 22px;
+        font-size: 9px;
+      }
+      .case-pipeline .pipeline-copy strong {
+        font-size: 10px;
+      }
+      .case-pipeline .pipeline-copy small {
+        font-size: 8px;
+      }
+      .case-section {
+        display: grid;
+        grid-template-rows: 42px auto;
+      }
+      .case-section-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 13px;
+        border-bottom: 1px solid var(--line);
+        background: var(--soft);
+      }
+      .case-section-head strong {
+        font-size: 11px;
+      }
+      .case-section-head small {
+        margin-left: auto;
+        color: var(--muted);
+        font-size: 9px;
+        text-align: right;
+      }
+      .case-section-body {
+        display: grid;
+        gap: 10px;
+        padding: 12px 13px 14px;
+      }
+      .case-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+      }
+      .case-tab {
+        padding: 5px 9px;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        background: var(--surface);
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 9px;
+        font-weight: 650;
+      }
+      .case-tab:hover {
+        border-color: #b7c9bc;
+      }
+      .case-tab[aria-selected='true'] {
+        border-color: #bdd7c5;
+        background: var(--green-pale);
+        color: var(--green-dark);
+      }
+      .case-pre {
+        max-height: 240px;
+        overflow: auto;
+        margin: 0;
+        padding: 11px 12px;
+        border-radius: 6px;
+        background: var(--code);
+        color: var(--code-ink);
+        font: 10px/1.65 var(--mono);
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        scrollbar-width: thin;
+      }
+      .case-block {
+        display: grid;
+        align-content: start;
+        gap: 5px;
+      }
+      .case-label {
+        color: var(--muted);
+        font: 650 8px var(--mono);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      .case-prose {
+        max-height: 280px;
+        overflow: auto;
+        margin: 0;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--soft);
+        font-size: 11px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        scrollbar-width: thin;
+      }
+      .case-prose.reference {
+        border-color: #d9e5dc;
+        background: var(--green-pale);
+      }
+      .case-grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+        gap: 10px;
+      }
+      .param-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 7px;
+      }
+      .param {
+        display: grid;
+        gap: 2px;
+        padding: 8px 10px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--soft);
+      }
+      .param span {
+        color: var(--muted);
+        font: 600 8px var(--mono);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .param strong {
+        overflow-wrap: anywhere;
+        font-size: 11px;
+        font-weight: 650;
+      }
+      .step-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .step-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 8px;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        background: var(--soft);
+        color: var(--muted);
+        font: 600 9px var(--mono);
+      }
+      .step-chip b {
+        color: var(--ink);
+        font-weight: 700;
+      }
+      .case-metric-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+        gap: 8px;
+      }
+      .case-metric {
+        padding: 9px 10px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--soft);
+      }
+      .case-metric span {
+        display: block;
+        color: var(--muted);
+        font: 600 8px var(--mono);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .case-metric strong {
+        display: block;
+        margin-top: 2px;
+        font: 700 17px var(--mono);
+        letter-spacing: -0.03em;
+      }
+      .case-metric small {
+        color: var(--muted);
+        font-size: 8px;
+      }
+      .case-table-wrap {
+        overflow-x: auto;
+      }
+      .case-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 10px;
+      }
+      .case-table th,
+      .case-table td {
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--soft);
+        text-align: right;
+        font-family: var(--mono);
+      }
+      .case-table th {
+        border-bottom-color: var(--line);
+        color: var(--muted);
+        font: 650 8px var(--mono);
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+      }
+      .case-table th:first-child,
+      .case-table td:first-child {
+        text-align: left;
+      }
+      .case-table tr[data-active='true'] td {
+        background: var(--green-pale);
+        color: var(--green-dark);
+        font-weight: 700;
+      }
+      .case-foot {
+        margin: 0;
+        color: var(--muted);
+        font-size: 9px;
+        line-height: 1.5;
+      }
+      .case-empty {
+        display: grid;
+        place-items: center;
+        gap: 6px;
+        padding: 18px;
+        border: 1px dashed var(--line);
+        border-radius: 8px;
+        background: var(--soft);
+        color: var(--muted);
+        font-size: 10px;
+        text-align: center;
+      }
+      @media (max-width: 900px) {
+        .cases-layout {
+          grid-template-columns: minmax(220px, 36%) minmax(0, 1fr);
+        }
+        .case-grid-2 {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 759px), (max-height: 619px) {
+        .cases-main {
+          display: block;
+        }
+        .cases-head {
+          flex-wrap: wrap;
+          align-items: flex-start;
+        }
+        .demo-badge {
+          white-space: normal;
+        }
+        .cases-notice {
+          flex-wrap: wrap;
+          align-items: flex-start;
+        }
+        .cases-layout {
+          grid-template-columns: 1fr;
+        }
+        .case-list-panel {
+          max-height: 260px;
+        }
+        .case-detail {
+          overflow: visible;
+        }
+        .case-hero {
+          flex-direction: column;
+        }
+        .case-run {
+          align-items: flex-start;
+        }
+        .case-pipeline {
+          overflow-x: auto;
+        }
+        .case-section-head small {
+          display: none;
+        }
+      }
+      @media (max-width: 560px) {
+        .topbar {
+          flex-wrap: wrap;
+          gap: 6px;
+          padding: 7px 12px;
+        }
+        .brand {
+          font-size: 11px;
+        }
+        .top-actions {
+          flex-wrap: wrap;
+        }
+        .status-badge {
+          display: none;
+        }
+        .view-toggle {
+          min-height: 26px;
+          padding: 0 7px;
+          font-size: 8px;
+        }
+      }
       :focus-visible {
         outline: 2px solid #408761;
         outline-offset: 2px;
@@ -971,6 +1481,9 @@
           <div class="status-badge">Local · modelo opcional</div>
           <button id="view-toggle" class="view-toggle" type="button">
             Ver comparación B0/B1/B2/P
+          </button>
+          <button id="cases-toggle" class="view-toggle" type="button">
+            Ver casos reales (replay)
           </button>
         </div>
       </header>
@@ -1269,7 +1782,49 @@ Pega una función y procesa para inspeccionar el AST que produce Babel.</pre>
           </article>
         </section>
       </main>
+      <main id="cases-view" class="cases-main" hidden>
+        <div class="cases-head">
+          <div>
+            <h1>Casos reales del dataset</h1>
+            <p class="subtitle">
+              Reproducción de resultados guardados: entrada, parámetros, salida, referencia y
+              métricas de la corrida completa.
+            </p>
+          </div>
+          <span class="demo-badge">Modo demo · resultados precalculados del dataset</span>
+        </div>
+        <div class="cases-notice" role="note">
+          <strong>Replay local</strong>
+          <span id="case-run-meta"
+            >Se leen los archivos del experimento; no se llama al modelo ni a APIs externas.</span
+          >
+        </div>
+        <section class="cases-layout" aria-label="Casos reales">
+          <aside class="panel case-list-panel" aria-label="Selector de casos">
+            <div class="panel-head">
+              <div class="panel-title"><span class="step">01</span><span>Casos</span></div>
+              <span id="case-count" class="result-subtitle"></span>
+            </div>
+            <div id="case-list" class="case-list" role="group" aria-label="Casos disponibles"></div>
+            <p class="case-legend">
+              <strong>Acierto</strong> · BERTScore F1 ≥ 0,20. <strong>Caso difícil</strong> · entre
+              0 y 0,20. <strong>Desacierto</strong> · BERTScore F1 &lt; 0. La corrida completa no
+              tiene fallos de ejecución (8 224/8 224): los desaciertos son errores de contenido.
+            </p>
+          </aside>
+          <section id="case-detail" class="case-detail" aria-live="polite">
+            <div class="case-empty">
+              <strong>Selecciona un caso del dataset</strong>
+              <span
+                >Cada caso muestra la entrada exacta, los parámetros, la salida guardada y sus
+                métricas.</span
+              >
+            </div>
+          </section>
+        </section>
+      </main>
     </div>
+    <!--REAL_CASES_DATA-->
     <script>
       const sample = `function parseList(raw) {\n  if (!raw) return [];\n  let items = [];\n  try {\n    items = JSON.parse(raw).map(s => s.trim());\n  } catch (e) {\n    return [];\n  }\n  for (const s of items) {\n    if (s.length > 80) continue;\n    console.log(s);\n  }\n  return items;\n}`;
       const source = document.querySelector('#source');
@@ -1283,9 +1838,12 @@ Pega una función y procesa para inspeccionar el AST que produce Babel.</pre>
       const stageExplainer = document.querySelector('#stage-explainer');
       const implementationView = document.querySelector('#implementation-view');
       const comparisonView = document.querySelector('#comparison-view');
+      const casesView = document.querySelector('#cases-view');
       const viewToggle = document.querySelector('#view-toggle');
+      const casesToggle = document.querySelector('#cases-toggle');
       const comparisonFunction = document.querySelector('#comparison-function');
       const comparisonStatus = document.querySelector('#comparison-status');
+      const realCases = window.__REAL_CASES__ ?? null;
       let lastResult = null;
       let comparisonData = null;
       let selectedStage = 'parse';
@@ -1305,6 +1863,7 @@ Pega una función y procesa para inspeccionar el AST que produce Babel.</pre>
         tab.addEventListener('click', () => selectStage(tab.dataset.stage));
       });
       viewToggle.addEventListener('click', toggleView);
+      casesToggle.addEventListener('click', toggleCases);
 
       source.addEventListener('input', () => {
         const lines = source.value ? source.value.split('\n').length : 0;
@@ -1678,6 +2237,373 @@ Pega una función y procesa para inspeccionar el AST que produce Babel.</pre>
           }, 1200);
         });
       });
+
+      // --- Casos reales: replay de resultados precalculados (sin red ni modelo) ---
+      const REPRESENTATION_ORDER = ['b0', 'b1', 'b2', 'p'];
+      let activeCase = null;
+      let activeCaseTab = 'p';
+      let casesRendered = false;
+
+      function toggleCases() {
+        if (!casesView.hidden) {
+          closeCases();
+          return;
+        }
+        implementationView.hidden = true;
+        comparisonView.hidden = true;
+        casesView.hidden = false;
+        viewToggle.hidden = true;
+        casesToggle.textContent = 'Volver a implementación';
+        renderCases();
+      }
+
+      function closeCases() {
+        casesView.hidden = true;
+        viewToggle.hidden = false;
+        casesToggle.textContent = 'Ver casos reales (replay)';
+        implementationView.hidden = false;
+      }
+
+      function makeElement(tag, className, text) {
+        const element = document.createElement(tag);
+        if (className) element.className = className;
+        if (text !== undefined) element.textContent = text;
+        return element;
+      }
+
+      function formatNumber(value, digits = 3) {
+        return typeof value === 'number' && Number.isFinite(value) ? value.toFixed(digits) : '—';
+      }
+
+      function renderCases() {
+        if (casesRendered) return;
+        casesRendered = true;
+        const list = document.querySelector('#case-list');
+        const count = document.querySelector('#case-count');
+        const meta = document.querySelector('#case-run-meta');
+        const cases = realCases?.cases ?? [];
+        if (cases.length === 0) {
+          const empty = makeElement('div', 'case-empty');
+          empty.append(
+            makeElement('strong', '', 'Sin datos del experimento'),
+            makeElement(
+              'span',
+              '',
+              realCases?.error ??
+                'No se encontró experimento/salidas-codex.jsonl. Genera la corrida antes de abrir esta vista.',
+            ),
+          );
+          list.append(empty);
+          count.textContent = '0 casos';
+          document.querySelector('#case-run-meta').textContent =
+            'Modo demo sin datos: revisa los archivos del experimento.';
+          return;
+        }
+        count.textContent = `${cases.length} de ${realCases.run.functions} funciones`;
+        meta.textContent = `${realCases.run.source} · ${realCases.run.model} · ${realCases.run.calls} llamadas precalculadas · ${realCases.run.representation}. Sin llamadas al modelo ni a APIs externas.`;
+        for (const item of cases) {
+          const button = makeElement('button', 'case-item');
+          button.type = 'button';
+          button.dataset.id = item.id;
+          button.setAttribute('aria-pressed', 'false');
+          const top = makeElement('div', 'case-item-top');
+          const tag = makeElement('span', 'case-tag', item.categoryLabel);
+          tag.dataset.category = item.category;
+          top.append(makeElement('span', 'case-item-id', item.id), tag);
+          button.append(
+            top,
+            makeElement('span', 'case-item-fn', item.functionName),
+            makeElement('span', 'case-item-repo', `${item.repo} · ${item.path}`),
+          );
+          button.addEventListener('click', () => selectCase(item.id));
+          list.append(button);
+        }
+        selectCase(cases[0].id);
+      }
+
+      function selectCase(id) {
+        const item = (realCases?.cases ?? []).find((candidate) => candidate.id === id);
+        if (!item) return;
+        activeCase = item;
+        activeCaseTab = 'p';
+        for (const button of document.querySelectorAll('.case-item')) {
+          button.setAttribute('aria-pressed', String(button.dataset.id === id));
+        }
+        renderCaseDetail();
+      }
+
+      function caseSection(number, title, subtitle, children) {
+        const article = makeElement('article', 'panel case-section');
+        const head = makeElement('div', 'case-section-head');
+        head.append(
+          makeElement('span', 'step', number),
+          makeElement('strong', '', title),
+          makeElement('small', '', subtitle),
+        );
+        const body = makeElement('div', 'case-section-body');
+        body.append(...children);
+        article.append(head, body);
+        return article;
+      }
+
+      function parameterBlock(label, value) {
+        const block = makeElement('div', 'param');
+        block.append(
+          makeElement('span', '', label),
+          makeElement('strong', '', String(value ?? '—')),
+        );
+        return block;
+      }
+
+      function metricBlock(label, value, hint) {
+        const block = makeElement('div', 'case-metric');
+        block.append(
+          makeElement('span', '', label),
+          makeElement('strong', '', value),
+          makeElement('small', '', hint ?? ''),
+        );
+        return block;
+      }
+
+      function renderCaseDetail() {
+        const item = activeCase;
+        const detail = document.querySelector('#case-detail');
+        if (!item || !detail) return;
+        detail.replaceChildren();
+
+        const heroPanel = makeElement('article', 'panel');
+        const hero = makeElement('div', 'case-hero');
+        const heroCopy = makeElement('div');
+        const kicker = makeElement('div', 'case-kicker');
+        const tag = makeElement('span', 'case-tag', item.categoryLabel);
+        tag.dataset.category = item.category;
+        kicker.append(makeElement('span', 'case-id-lg', item.id), tag);
+        const link = makeElement('a', '', `${item.repo} · ${item.path}`);
+        link.href = item.url;
+        link.target = '_blank';
+        link.rel = 'noreferrer';
+        const meta = makeElement('p', 'case-meta');
+        meta.append(link);
+        heroCopy.append(
+          kicker,
+          makeElement('h2', 'case-title', item.functionName),
+          meta,
+          makeElement('p', 'case-note', item.note),
+        );
+        const run = makeElement('div', 'case-run');
+        run.append(
+          makeElement('span', 'case-run-status done', 'Traza guardada · 0 llamadas al modelo'),
+        );
+        hero.append(heroCopy, run);
+
+        const pipeline = makeElement('div', 'pipeline case-pipeline');
+        pipeline.id = 'case-pipeline';
+        pipeline.setAttribute('aria-label', 'Pasos reproducidos del pipeline');
+        const steps = [
+          ['1', 'Admisión', 'Función admitida en el corpus congelado'],
+          ['2', 'Representación', 'B0 → B1 → B2 → P'],
+          ['3', 'Generación', 'Salida precalculada del modelo'],
+          ['4', 'Evaluación', 'BLEU · ROUGE-L · BERTScore'],
+        ];
+        for (const [number, title, caption] of steps) {
+          const step = makeElement('div', 'pipeline-step done');
+          step.dataset.title = title;
+          const copy = makeElement('span', 'pipeline-copy');
+          copy.append(makeElement('strong', '', title), makeElement('small', '', caption));
+          step.append(makeElement('span', 'pipeline-number', number), copy);
+          pipeline.append(step);
+        }
+        heroPanel.append(hero, pipeline);
+
+        // 01 Entrada
+        const tabs = makeElement('div', 'case-tabs');
+        tabs.setAttribute('role', 'tablist');
+        tabs.setAttribute('aria-label', 'Representación de entrada');
+        const pre = makeElement('pre', 'case-pre');
+        pre.id = 'case-input';
+        pre.tabIndex = 0;
+        for (const representation of item.representations) {
+          const tab = makeElement('button', 'case-tab', representation.label);
+          tab.type = 'button';
+          tab.setAttribute('role', 'tab');
+          tab.dataset.representation = representation.id;
+          tab.setAttribute('aria-selected', String(representation.id === activeCaseTab));
+          tab.addEventListener('click', () => selectCaseTab(representation.id));
+          tabs.append(tab);
+        }
+        pre.textContent =
+          item.representations.find((representation) => representation.id === activeCaseTab)
+            ?.content ?? '';
+        const promptBlock = makeElement('div', 'case-block');
+        promptBlock.append(
+          makeElement('span', 'case-label', 'Prompt exacto del protocolo'),
+          makeElement('p', 'case-prose', item.prompt),
+        );
+        const inputSection = caseSection(
+          '01',
+          'Entrada',
+          'Documento del dataset enviado al modelo',
+          [
+            tabs,
+            makeElement('span', 'case-label', 'Documento de entrada guardado'),
+            pre,
+            promptBlock,
+          ],
+        );
+
+        // 02 Parámetros
+        const params = makeElement('div', 'param-grid');
+        for (const [label, value] of Object.entries(item.parameters)) {
+          params.append(parameterBlock(label, value));
+        }
+        const parameterSection = caseSection(
+          '02',
+          'Parámetros',
+          'Configuración registrada de la corrida',
+          [params],
+        );
+
+        // 03 Salida
+        const outputBlock = makeElement('div', 'case-block');
+        outputBlock.append(
+          makeElement('span', 'case-label', 'Salida guardada del sistema'),
+          makeElement('p', 'case-prose', item.output),
+        );
+        const referenceBlock = makeElement('div', 'case-block');
+        const referenceText = makeElement('p', 'case-prose reference', item.reference);
+        referenceBlock.append(
+          makeElement('span', 'case-label', 'Referencia esperada (docstring del dataset)'),
+          referenceText,
+        );
+        const outputGrid = makeElement('div', 'case-grid-2');
+        outputGrid.append(outputBlock, referenceBlock);
+
+        const chips = makeElement('div', 'step-chips');
+        for (const representation of item.representations) {
+          const chip = makeElement('span', 'step-chip');
+          chip.append(
+            makeElement('b', '', representation.id.toUpperCase()),
+            document.createTextNode(`${representation.chars} caracteres`),
+          );
+          chips.append(chip);
+        }
+        const generated = makeElement('span', 'step-chip');
+        generated.append(
+          makeElement('b', '', 'Generación'),
+          document.createTextNode(
+            `${item.metrics.latencyMs ?? '—'} ms · ${item.metrics.inputTokens ?? '—'} → ${
+              item.metrics.outputTokens ?? '—'
+            } tokens`,
+          ),
+        );
+        chips.append(generated);
+        const intermediateBlock = makeElement('div', 'case-block');
+        intermediateBlock.append(
+          makeElement('span', 'case-label', 'Pasos intermedios guardados'),
+          chips,
+        );
+        const outputSection = caseSection(
+          '03',
+          'Salida del sistema',
+          'Respuesta precalculada y referencia para comparar',
+          [outputGrid, intermediateBlock],
+        );
+
+        // 04 Métricas
+        const metrics = item.metrics;
+        const metricGrid = makeElement('div', 'case-metric-grid');
+        metricGrid.append(
+          metricBlock('BLEU', formatNumber(metrics.bleu), 'n-gramas'),
+          metricBlock('ROUGE-L F1', formatNumber(metrics.rougeL), 'solapamiento'),
+          metricBlock('BERTScore F1', formatNumber(metrics.bertscore), 'semántico'),
+          metricBlock(
+            'Latencia',
+            metrics.latencyMs === null ? '—' : `${metrics.latencyMs} ms`,
+            'una llamada',
+          ),
+          metricBlock(
+            'Tokens',
+            `${metrics.inputTokens ?? '—'} / ${metrics.outputTokens ?? '—'}`,
+            'entrada / salida',
+          ),
+          metricBlock(
+            'Intentos',
+            `${metrics.attempts ?? '—'}`,
+            metrics.cacheHit ? 'desde caché' : 'sin caché',
+          ),
+        );
+
+        const table = makeElement('table', 'case-table');
+        const head = document.createElement('thead');
+        const headRow = document.createElement('tr');
+        for (const label of [
+          'Representación',
+          'BLEU',
+          'ROUGE-L',
+          'BERTScore',
+          'Latencia',
+          'Tokens',
+        ]) {
+          headRow.append(makeElement('th', '', label));
+        }
+        head.append(headRow);
+        const body = document.createElement('tbody');
+        for (const representation of item.representations) {
+          const row = document.createElement('tr');
+          row.dataset.active = String(representation.id === 'p');
+          row.append(
+            makeElement('td', '', representation.label),
+            makeElement('td', '', formatNumber(representation.metrics.bleu)),
+            makeElement('td', '', formatNumber(representation.metrics.rougeL)),
+            makeElement('td', '', formatNumber(representation.metrics.bertscore)),
+            makeElement(
+              'td',
+              '',
+              representation.metrics.latencyMs === null
+                ? '—'
+                : `${representation.metrics.latencyMs} ms`,
+            ),
+            makeElement(
+              'td',
+              '',
+              `${representation.metrics.inputTokens ?? '—'} / ${representation.metrics.outputTokens ?? '—'}`,
+            ),
+          );
+          body.append(row);
+        }
+        table.append(head, body);
+        const tableWrap = makeElement('div', 'case-table-wrap');
+        tableWrap.append(table);
+        const foot = makeElement(
+          'p',
+          'case-foot',
+          'BERTScore F1 usa el reescalado por baseline de la corrida y puede ser negativo. La categoría del caso se calcula con el BERTScore de P; la columna P queda resaltada.',
+        );
+        const metricsSection = caseSection(
+          '04',
+          'Métricas',
+          'Puntuación por representación y coste de la llamada',
+          [metricGrid, tableWrap, foot],
+        );
+
+        detail.append(heroPanel, inputSection, parameterSection, outputSection, metricsSection);
+        detail.scrollTop = 0;
+      }
+
+      function selectCaseTab(representationId) {
+        activeCaseTab = representationId;
+        for (const tab of document.querySelectorAll('.case-tab')) {
+          tab.setAttribute(
+            'aria-selected',
+            String(tab.dataset.representation === representationId),
+          );
+        }
+        const representation = activeCase?.representations.find(
+          (item) => item.id === representationId,
+        );
+        const pre = document.querySelector('#case-input');
+        if (pre && representation) pre.textContent = representation.content;
+      }
     </script>
   </body>
 </html>

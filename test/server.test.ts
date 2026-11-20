@@ -24,7 +24,10 @@ describe('local web app', () => {
     const response = await fetch(baseUrl);
     assert.equal(response.status, 200);
     assert.match(response.headers.get('content-type') ?? '', /text\/html/);
-    assert.match(await response.text(), /Procesar función/);
+    const page = await response.text();
+    assert.match(page, /Procesar función/);
+    assert.match(page, /window\.__REAL_CASES__ = /);
+    assert.doesNotMatch(page, /<!--REAL_CASES_DATA-->/);
   });
 
   it('returns only the implemented JS-SemDocIR representation for pasted source', async () => {

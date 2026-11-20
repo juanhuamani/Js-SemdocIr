@@ -10,8 +10,27 @@ import {
 import { createGenerateRoute, handleAnalyzeRoute, handleCompareRoute } from './routes/index.ts';
 import type { ProviderHandle } from './routes/index.ts';
 import { sendJson } from './http.ts';
+import { loadRealCases } from './real-cases.ts';
 
 const pagePath = fileURLToPath(new URL('../../../ui/index.html', import.meta.url));
+const realCasesMarker = '<!--REAL_CASES_DATA-->';
+
+/** The replay payload is read-only, so it is parsed once per server process. */
+let realCasesPromise: Promise<
+  | Awaited<ReturnType<typeof loadRealCases>>
+  | {
+      error: string;
+      cases: never[];
+    }
+> | null = null;
+
+function loadRealCasesOnce() {
+  realCasesPromise ??= loadRealCases().catch((error: unknown) => ({
+    error: error instanceof Error ? error.message : String(error),
+    cases: [],
+  }));
+  return realCasesPromise;
+}
 
 type Handler = (request: IncomingMessage, response: ServerResponse) => Promise<void>;
 
@@ -62,9 +81,12 @@ export function createAppServer(options: AppServerOptions = {}) {
 
 async function servePage(_request: IncomingMessage, response: ServerResponse): Promise<void> {
   try {
-    const page = await readFile(pagePath);
+    const page = await readFile(pagePath, 'utf8');
+    const realCases = await loadRealCasesOnce();
+    const payload = JSON.stringify(realCases).replace(/</g, '\\u003c');
+    const dataScript = `<script>window.__REAL_CASES__ = ${payload};</script>`;
     response.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
-    response.end(page);
+    response.end(page.replace(realCasesMarker, () => dataScript));
   } catch {
     sendJson(response, 500, { error: 'No se pudo cargar la interfaz local.' });
   }
