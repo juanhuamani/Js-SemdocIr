@@ -1,0 +1,9 @@
+func getTypeOfPropertyOfType(type, name)
+INPUT type
+INPUT name
+COND NONE
+CALL getPropertyOfType(type, name) -> prop
+CALL getTypeOfSymbol(prop)
+ASYNC NONE
+ERR NONE
+RET prop ? getTypeOfSymbol(prop) : undefined

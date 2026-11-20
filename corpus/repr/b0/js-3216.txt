@@ -1,0 +1,8 @@
+function generateUniqueName(declaredNames, hint) {
+  var unique = hint, n = 1;
+  while (declaredNames.indexOf(unique) > -1) {
+    if (n > 1000) throw new Error("Endless loop searching for unique variable " + unique);
+    unique = unique.replace(/_[0-9]+$|$/, "_" + (++n));
+  }
+  return unique;
+}

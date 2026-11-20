@@ -1,0 +1,10 @@
+func generateUniqueName(declaredNames, hint)
+INPUT declaredNames
+INPUT hint
+COND LOOP while (declaredNames.indexOf(unique) > -1)
+COND n > 1000 -> THROW Error("Endless loop searching for unique variable " + unique)
+CALL declaredNames.indexOf(unique)
+CALL unique.replace(/_[0-9]+$|$/, "_" + (++n)) -> unique
+ASYNC NONE
+ERR NOCATCH
+RET unique

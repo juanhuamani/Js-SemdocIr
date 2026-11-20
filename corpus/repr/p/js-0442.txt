@@ -1,0 +1,8 @@
+func getJsxAttributePropertySymbol(attrib)
+INPUT attrib
+COND NONE
+CALL getJsxElementAttributesType(attrib.parent) -> attributesType
+CALL getPropertyOfType(attributesType, attrib.name.text) -> prop
+ASYNC NONE
+ERR NONE
+RET prop || unknownSymbol

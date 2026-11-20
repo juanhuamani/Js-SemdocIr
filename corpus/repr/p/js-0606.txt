@@ -1,0 +1,13 @@
+func Flow(opts)
+INPUT opts
+COND !this.support -> RET undefined
+CALL /Chrome/.test(window.navigator.userAgent)
+CALL /Firefox/.test(window.navigator.userAgent)
+CALL /Edge/.test(window.navigator.userAgent)
+CALL Flow.extend({}, this.defaults, opts || {})
+ASYNC NONE
+ERR NONE
+RET NONE
+ND dynamic operation: typeof File
+ND dynamic operation: typeof Blob
+ND dynamic operation: typeof FileList

@@ -1,0 +1,3 @@
+function contextualTypeHasIndexSignature(type, kind) {
+            return !!(type.flags & 16384 /* Union */ ? ts.forEach(type.types, function (t) { return getIndexTypeOfStructuredType(t, kind); }) : getIndexTypeOfStructuredType(type, kind));
+        }

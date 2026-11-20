@@ -1,0 +1,120 @@
+function Flow(opts) {
+    /**
+     * Supported by browser?
+     * @type {boolean}
+     */
+    this.support = (
+        typeof File !== 'undefined' &&
+        typeof Blob !== 'undefined' &&
+        typeof FileList !== 'undefined' &&
+        (
+          !!Blob.prototype.slice || !!Blob.prototype.webkitSlice || !!Blob.prototype.mozSlice ||
+          false
+        ) // slicing files support
+    );
+
+    if (!this.support) {
+      return ;
+    }
+
+    /**
+     * Check if directory upload is supported
+     * @type {boolean}
+     */
+    this.supportDirectory = (
+        /Chrome/.test(window.navigator.userAgent) ||
+        /Firefox/.test(window.navigator.userAgent) ||
+        /Edge/.test(window.navigator.userAgent)
+    );
+
+    /**
+     * List of FlowFile objects
+     * @type {Array.<FlowFile>}
+     */
+    this.files = [];
+
+    /**
+     * Default options for flow.js
+     * @type {Object}
+     */
+    this.defaults = {
+      chunkSize: 1024 * 1024,
+      forceChunkSize: false,
+      simultaneousUploads: 3,
+      singleFile: false,
+      fileParameterName: 'file',
+      progressCallbacksInterval: 500,
+      speedSmoothingFactor: 0.1,
+      query: {},
+      headers: {},
+      withCredentials: false,
+      preprocess: null,
+      method: 'multipart',
+      testMethod: 'GET',
+      uploadMethod: 'POST',
+      prioritizeFirstAndLastChunk: false,
+      allowDuplicateUploads: false,
+      target: '/',
+      testChunks: true,
+      generateUniqueIdentifier: null,
+      maxChunkRetries: 0,
+      chunkRetryInterval: null,
+      permanentErrors: [404, 413, 415, 500, 501],
+      successStatuses: [200, 201, 202],
+      onDropStopPropagation: false,
+      initFileFn: null,
+      readFileFn: webAPIFileRead
+    };
+
+    /**
+     * Current options
+     * @type {Object}
+     */
+    this.opts = {};
+
+    /**
+     * List of events:
+     *  key stands for event name
+     *  value array list of callbacks
+     * @type {}
+     */
+    this.events = {};
+
+    var $ = this;
+
+    /**
+     * On drop event
+     * @function
+     * @param {MouseEvent} event
+     */
+    this.onDrop = function (event) {
+      if ($.opts.onDropStopPropagation) {
+        event.stopPropagation();
+      }
+      event.preventDefault();
+      var dataTransfer = event.dataTransfer;
+      if (dataTransfer.items && dataTransfer.items[0] &&
+        dataTransfer.items[0].webkitGetAsEntry) {
+        $.webkitReadDataTransfer(event);
+      } else {
+        $.addFiles(dataTransfer.files, event);
+      }
+    };
+
+    /**
+     * Prevent default
+     * @function
+     * @param {MouseEvent} event
+     */
+    this.preventEvent = function (event) {
+      event.preventDefault();
+    };
+
+
+    /**
+     * Current options
+     * @type {Object}
+     */
+    this.opts = Flow.extend({}, this.defaults, opts || {});
+
+  }

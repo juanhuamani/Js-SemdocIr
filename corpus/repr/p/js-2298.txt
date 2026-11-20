@@ -1,0 +1,14 @@
+func getExceptions()
+INPUT NONE
+COND NONE
+CALL ([]).push('{')
+CALL ([]).push('}')
+CALL ([]).push('[')
+CALL ([]).push(']')
+CALL ([]).push('(')
+CALL ([]).push(')')
+CALL ([]).push(')')
+CALL ([]).push('(')
+ASYNC NONE
+ERR NONE
+RET { openers, closers }

@@ -1,0 +1,10 @@
+func createInstance(defaultConfig)
+INPUT defaultConfig
+COND NONE
+CALL Axios(defaultConfig) -> context
+CALL bind(Axios.prototype.request, context) -> instance
+CALL utils.extend(instance, Axios.prototype, context)
+CALL utils.extend(instance, context)
+ASYNC NONE
+ERR NONE
+RET instance

@@ -1,0 +1,9 @@
+func contextualTypeHasIndexSignature(type, kind)
+INPUT type
+INPUT kind
+COND NONE
+CALL ts.forEach(type.types, function (t) { return getIndexTypeOfStructuredType(t, kind); })
+CALL getIndexTypeOfStructuredType(type, kind)
+ASYNC NONE
+ERR NONE
+RET !!(type.flags & 16384 ? ts.forEach(type.types, function (t) { return getIndexTypeOfStructuredType(t, kind); }) : getIndexTypeOfStructuredType(type, kind))

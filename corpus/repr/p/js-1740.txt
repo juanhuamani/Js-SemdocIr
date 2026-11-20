@@ -1,0 +1,8 @@
+func patch(node, polarity)
+INPUT node
+INPUT polarity
+COND NONE
+CALL classify(polarity)
+ASYNC NONE
+ERR NONE
+RET NONE

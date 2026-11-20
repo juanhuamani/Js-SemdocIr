@@ -1,0 +1,4 @@
+function getTypeOfPropertyOfType(type, name) {
+            var prop = getPropertyOfType(type, name);
+            return prop ? getTypeOfSymbol(prop) : undefined;
+        }

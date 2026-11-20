@@ -1,0 +1,5 @@
+function getJsxAttributePropertySymbol(attrib) {
+            var attributesType = getJsxElementAttributesType(attrib.parent);
+            var prop = getPropertyOfType(attributesType, attrib.name.text);
+            return prop || unknownSymbol;
+        }
